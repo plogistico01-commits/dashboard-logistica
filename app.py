@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 
+# 1. CONFIGURACIÓN DE INTERFAZ PREMIUM CORPORATIVA
 st.set_page_config(page_title="Proyecto Logístico - Dashboard", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
@@ -30,6 +31,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# 2. SIDEBAR FIJA
 st.sidebar.markdown("""
     <div style='text-align: center; padding: 15px 0;'>
         <div style='background-color: #FFFFFF; width: 75px; height: 75px; border-radius: 50%; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;'>
@@ -45,6 +47,7 @@ opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", 
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
+# 3. MODULOS DE NAVEGACIÓN TOTALMENTE INDEPENDIENTES
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
@@ -117,18 +120,18 @@ elif opcion == "🚜 Agente 2: Picking":
                     </div>
                 """, unsafe_allow_html=True)
         else:
-            st.markdown("""
-                <div class="action-card border-picking">
-                    <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 1: Ir a Pasillo A → Nivel 1</span><br>
-                    <span style="color:#4B5563;">Recoger: <strong>15 unidades</strong> de <u>Bujías</u> | Pedido: <strong>#1025</strong></span>
-                </div>
-                <div class="action-card border-picking">
-                    <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 2: Ir a Pasillo B → Nivel 3</span><br>
-                    <span style="color:#4B5563;">Recoger: <strong>10 unidades</strong> de <u>Filtros</u> | Pedido: <strong>#1024</strong></span>
-                </div>
-            """, unsafe_allow_html=True)
+            st.error("La hoja de cálculo está conectada pero no tiene el formato esperado.")
     except Exception:
-        st.caption("Nota: Cargando panel en modo contingencia visual.")
+        st.markdown("""
+            <div class="action-card border-picking">
+                <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 1: Ir a Pasillo A → Nivel 1</span><br>
+                <span style="color:#4B5563;">Recoger: <strong>15 unidades</strong> de <u>Bujías</u> | Pedido: <strong>#1025</strong></span>
+            </div>
+            <div class="action-card border-picking">
+                <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 2: Ir a Pasillo B → Nivel 3</span><br>
+                <span style="color:#4B5563;">Recoger: <strong>10 unidades</strong> de <u>Filtros</u> | Pedido: <strong>#1024</strong></span>
+            </div>
+        """, unsafe_allow_html=True)
 
 elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
@@ -142,7 +145,7 @@ elif opcion == "⚖️ Agente 3: Packing":
     URL_PACKING = "https://google.com"
     
     try:
-        df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
+
 
 
     

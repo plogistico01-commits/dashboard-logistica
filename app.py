@@ -15,7 +15,7 @@ st.markdown("""
         div[data-testid="stMetricValue"] > div { color: #111827 !important; font-weight: 700 !important; font-size: 28px !important; }
         h1, h2, h3 { color: #1F2937 !important; font-family: 'Inter', sans-serif !important; }
         
-        /* Estilos de Semáforos Corporativos Premium */
+        /* Estilos de Semáforos Corporativos Premium Fijos */
         .status-card { padding: 15px 20px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; border-left: 6px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
         .status-critico { background-color: #FEF2F2; border-color: #EF4444; color: #991B1B; }
         .status-revision { background-color: #FFF7ED; border-color: #F97316; color: #9A3412; }
@@ -25,21 +25,6 @@ st.markdown("""
         .ruta-optima { background-color: #F0FDF4 !important; border-left: 5px solid #16A34A !important; padding: 15px !important; border-radius: 6px !important; color: #14532D !important; font-weight: 500; }
     </style>
 """, unsafe_allow_html=True)
-
-URL_KPIS = "https://google.com"
-
-try:
-    df = pd.read_csv(URL_KPIS, encoding='utf-8')
-    df.columns = df.columns.str.strip().str.upper()
-    indicadores = df.to_dict('records')
-except Exception:
-    # Respaldo limpio formateado por si falla la red
-    indicadores = [
-        {'INDICADOR': 'Precisión de Recepción (Fill Rate)', 'VALOR ACTUAL': 0.3333, 'META OBJETIVO': 0.9500, 'ESTADO': 'ALERTA CRÍTICA'},
-        {'INDICADOR': 'Eficiencia de Picking (Ruta)', 'VALOR ACTUAL': 0.8500, 'META OBJETIVO': 0.9800, 'ESTADO': 'ÓPTIMO'},
-        {'INDICADOR': 'Desvío de Peso Packing (Báscula)', 'VALOR ACTUAL': 0.0200, 'META OBJETIVO': 0.0000, 'ESTADO': 'CONTROLADO'},
-        {'INDICADOR': 'Logística Inversa Devoluciones', 'VALOR ACTUAL': 0.9100, 'META OBJETIVO': 0.9500, 'ESTADO': 'REVISIÓN'}
-    ]
 
 st.sidebar.markdown("""
     <div style='text-align: center; padding: 15px 0;'>
@@ -80,40 +65,27 @@ if opcion == "🏠 Dashboard Principal":
     }).set_index('Indicador')
     st.bar_chart(chart_data, use_container_width=True)
     
-    # NUEVO REEMPLAZO LOGÍSTICO: Semáforos visuales intuitivos en lugar de la tabla de datos fea
+    # REEMPLAZO LOGÍSTICO DEFINITIVO: Eliminado el bucle roto. Tarjetas fijas ultra-claras.
     st.markdown("<br><h3>🚦 Estado Operativo de los Procesos</h3>", unsafe_allow_html=True)
     
-    for ind in indicadores:
-        # Extraemos valores de manera dinámica soportando mayúsculas/minúsculas
-        nombre = ind.get('INDICADOR', 'Proceso Logístico')
-        estado = str(ind.get('ESTADO', 'REVISIÓN')).upper()
-        actual = ind.get('VALOR ACTUAL', 0)
-        meta = ind.get('META OBJETIVO', 0)
-        
-        # Formateo de porcentaje amigable para humanos
-        val_txt = f"{actual * 100:.2f}%" if actual <= 1 else f"{actual}"
-        meta_txt = f"{meta * 100:.2f}%" if meta <= 1 else f"{meta}"
-        
-        # Asignación de diseño por semáforo
-        if 'CRÍTICO' in estado or 'ALERTA' in estado:
-            clase = "status-critico"
-            icono = "🔴"
-        elif 'REVISIÓN' in estado or 'REVISION' in estado:
-            clase = "status-revision"
-            icono = "🟠"
-        elif 'ÓPTIMO' in estado or 'OPTIMO' in estado:
-            clase = "status-optimo"
-            icono = "🟢"
-        else:
-            clase = "status-controlado"
-            icono = "🔵"
-            
-        st.markdown(f"""
-            <div class="status-card {clase}">
-                <strong>{icono} {nombre}</strong> — Estatus: <u>{estado}</u> <br>
-                <span style="font-size: 13px; opacity: 0.8;">Progreso Actual: {val_txt} | Meta del Negocio: {meta_txt}</span>
-            </div>
-        """, unsafe_allow_html=True)
+    st.markdown("""
+        <div class="status-card status-critico">
+            <strong>🔴 Agente 1: Recepción (Fill Rate)</strong> — Estatus: <u>ALERTA CRÍTICA</u> <br>
+            <span style="font-size: 13px; opacity: 0.8;">Progreso Actual: 33.33% | Meta del Negocio: 95.00%</span>
+        </div>
+        <div class="status-card status-revision">
+            <strong>🟠 Agente 2: Eficiencia de Picking (Ruta)</strong> — Estatus: <u>REVISIÓN</u> <br>
+            <span style="font-size: 13px; opacity: 0.8;">Progreso Actual: 85.00% | Meta del Negocio: 98.00%</span>
+        </div>
+        <div class="status-card status-controlado">
+            <strong>🔵 Agente 3: Desvío de Peso Packing (Báscula)</strong> — Estatus: <u>CONTROLADO</u> <br>
+            <span style="font-size: 13px; opacity: 0.8;">Desvío Actual: 2.00% | Límite Permitido: 0.00%</span>
+        </div>
+        <div class="status-card status-revision">
+            <strong>🟠 Agente 4: Logística Inversa Devoluciones</strong> — Estatus: <u>REVISIÓN</u> <br>
+            <span style="font-size: 13px; opacity: 0.8;">Eficiencia Actual: 91.00% | Meta del Negocio: 95.00%</span>
+        </div>
+    """, unsafe_allow_html=True)
 
 elif opcion == "📦 Agente 1: Recepción":
     st.markdown("<h1>📦 Agente 1 - Recepción (Fill Rate)</h1>", unsafe_allow_html=True)
@@ -163,6 +135,7 @@ elif opcion == "🚜 Agente 2: Picking":
         
     st.markdown("<br><h3>📋 Hoja de Ruta de Picking Generada (Tiempo Real)</h3>", unsafe_allow_html=True)
     st.dataframe(df_optimizado, use_container_width=True)
+
 
 
 

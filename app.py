@@ -1,74 +1,52 @@
 import streamlit as st
 import pandas as pd
-import time
 
 st.set_page_config(page_title="Logística Lean", layout="wide")
 
-# Enlace de descarga directa forzada a formato CSV plano
+# Conexión directa ultra-simplificada a la hoja principal de control
 SHEET_ID = "1xaPnDFIBd0Lwy_Z7wVI-SdsxSq20wg7fKtLDypjsd4I"
 URL = f"https://google.com{SHEET_ID}/export?format=csv&gid=1440866900"
 
-@st.cache_data(ttl=30)  # Limpia la memoria del servidor cada 30 segundos
-def cargar_datos_con_reintento(url_api):
-    # Mecanismo Lean de reintento automático si la red de Google falla
-    for _ in range(3):
-        try:
-            return pd.read_csv(url_api)
-        except Exception:
-            time.sleep(1)
-    return pd.read_csv(url_api)
-
 try:
-    df = cargar_datos_con_reintento(URL)
-    
-    # Normalización de los nombres de columnas
+    # El servidor remoto descarga el archivo plano directamente
+    df = pd.read_csv(URL, encoding='utf-8')
     df.columns = df.columns.str.strip().str.upper()
     
     st.sidebar.title("LOGÍSTICA LEAN")
     opcion = st.sidebar.radio("Agentes Activos:", ["📦 Agente 1: Recepción", "🏠 Ver Datos Crudos"])
     
-    # Mapeo inteligente de las columnas reales
-    col_indicador = [c for c in df.columns if 'INDICA' in c or 'KPI' in c or 'NOMBRE' in c or 'MÉTRICA' in c]
-    col_valores = [c for c in df.columns if 'VALOR' in c or 'ACTUAL' in c or 'CUMPLI' in c or 'DATO' in c]
+    # Buscamos las columnas reales de forma automática
+    col_indicador = [c for c in df.columns if 'INDICA' in c or 'KPI' in c or 'NOMBRE' in c][0]
+    col_valores = [c for c in df.columns if 'VALOR' in c or 'ACTUAL' in c or 'CUMPLI' in c][0]
     
     if opcion == "📦 Agente 1: Recepción":
         st.title("📦 Agente 1 - Recepción (Fill Rate)")
         
-        if col_indicador and col_valores:
-            c_ind = col_indicador[0]
-            c_val = col_valores[0]
+        # Filtramos la fila exacta del indicador de entrada
+        kpi = df[df[col_indicador].astype(str).str.contains("Fill Rate|PRECISION|RECEPCION", case=False, na=False)]
+        
+        if not kpi.empty:
+            val_str = str(kpi.iloc[0][col_valores]).replace(',', '.').replace('%', '').strip()
+            val_actual = float(val_str)
             
-            # Buscamos la fila del Fill Rate de forma elástica
-            kpi = df[df[c_ind].astype(str).str.contains("Fill Rate|PRECISION|RECEPCION", case=False, na=False)]
-            
-            if not kpi.empty:
-                val_raw = kpi.iloc[0][c_val]
-                val_str = str(val_raw).replace(',', '.').replace('%', '').strip()
-                val_actual = float(val_str)
+            if val_actual > 1.0:
+                val_actual = val_actual / 100.0
                 
-                if val_actual > 1.0:
-                    val_actual = val_actual / 100.0
-                
-                # Despliegue de tarjeta modular premium en Modo Oscuro
-                st.metric(label=f"Métrica: {kpi.iloc[0][c_ind]}", value=f"{val_actual * 100:.2f}%")
-                st.progress(min(max(val_actual, 0.0), 1.0))
-            else:
-                st.warning("No se encontró la fila 'Fill Rate' en la columna de indicadores.")
-                st.info("Filas encontradas en esta pestaña:")
-                st.write(list(df[c_ind].unique()))
+            # Renderizado final en modo oscuro premium
+            st.metric(label="Precisión de Recepción Actual", value=f"{val_actual * 100:.2f}%")
+            st.progress(min(max(val_actual, 0.0), 1.0))
         else:
-            st.error("Estructura de columnas no reconocida.")
-            st.info("Columnas leídas en tiempo real:")
-            st.write(list(df.columns))
-            
+            st.warning("No se encontró la fila del indicador de recepción en la columna.")
+            st.write(list(df[col_indicador].unique()))
     else:
         st.title("📊 Datos Crudos Sincronizados de Sheets")
         st.dataframe(df, use_container_width=True)
 
 except Exception as e:
-    st.error("Error temporal de red entre los servidores remotos.")
-    st.info("Por favor, presiona la tecla 'R' en unos segundos para reintentar la conexión automática.")
-    st.caption(f"Detalle técnico de red: {e}")
+    st.error("Conexión establecida. Esperando actualización del canal de datos.")
+    st.info("Presiona la tecla 'R' para forzar la lectura del archivo de Google Sheets.")
+    st.caption(f"Aviso del sistema: {e}")
+
 
 
 

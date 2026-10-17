@@ -87,18 +87,19 @@ if opcion == "🏠 Dashboard Principal":
 elif opcion == "📦 Agente 1: Recepción":
     st.markdown("<h1>📦 Agente 1 - Recepción (Fill Rate)</h1>", unsafe_allow_html=True)
     st.markdown("---")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.metric(label="Precisión de Recepción Actual", value="33.33%", delta="-61.67% vs Meta")
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.progress(0.33)
-    with c2:
-        st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drásticamente por debajo del objetivo del 95.00%.")
+    st.metric(label="Precisión de Recepción Actual", value="33.33%", delta="-61.67% vs Meta")
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.progress(0.33)
+    st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drásticamente por debajo del objetivo del 95.00%.")
 
 elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<h1>🚜 Agente 2 - Optimización de Rutas (Picking)</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Filtro de pedidos pendientes clasificados automáticamente por ubicación física</p>", unsafe_allow_html=True)
     st.markdown("---")
+    
+    st.metric(label="Eficiencia de la Ruta Activa", value="85.00%", delta="-13.00% vs Objetivo (98%)")
+    st.success("✅ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
+    st.markdown("<br><h3>📋 Instrucciones de Recolección Secuencial</h3>", unsafe_allow_html=True)
     
     URL_PICKING = "https://google.com"
     
@@ -107,14 +108,6 @@ elif opcion == "🚜 Agente 2: Picking":
         df_picking.columns = df_picking.columns.str.strip().str.upper()
     except Exception:
         df_picking = pd.DataFrame()
-
-    p_col1, p_col2 = st.columns(2)
-    with p_col1:
-        st.metric(label="Eficiencia de la Ruta Activa", value="85.00%", delta="-13.00% vs Objetivo (98%)")
-    with p_col2:
-        st.success("✅ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
-        
-    st.markdown("<br><h3>📋 Instrucciones de Recolección Secuencial</h3>", unsafe_allow_html=True)
     
     if not df_picking.empty and 'PASILLO' in df_picking.columns and 'ESTANTERÍA' in df_picking.columns:
         df_optimizado = df_picking.sort_values(by=['PASILLO', 'ESTANTERÍA']).reset_index(drop=True)
@@ -142,6 +135,10 @@ elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Auditoría automatizada de tolerancia de peso por bulto despachado</p>", unsafe_allow_html=True)
     st.markdown("---")
     
+    st.metric(label="Desvío Promedio General", value="2.00%", delta="+2.00% Tolerancia Máxima")
+    st.warning("🔍 Auditoría de Báscula: Se detectaron variaciones de peso. Validar bultos marcados antes del flejado final.")
+    st.markdown("<br><h3>📋 Instrucciones de Auditoría de Pesaje</h3>", unsafe_allow_html=True)
+    
     URL_PACKING = "https://google.com"
     
     try:
@@ -150,10 +147,7 @@ elif opcion == "⚖️ Agente 3: Packing":
     except Exception:
         df_packing = pd.DataFrame()
     
-    pa_col1, pa_col2 = st.columns(2)
-    with pa_col1:
-        st.metric(label="Desvío Promedio General", value="2.00%", delta="+2.00% Tolerancia Máxima")
-    with pa_col2:
+
 
 
 

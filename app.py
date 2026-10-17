@@ -23,7 +23,7 @@ st.markdown("""
         .status-controlado { background-color: #F0F9FF; border-color: #0EA5E9; color: #075985; }
         
         .ruta-optima { background-color: #F0FDF4 !important; border-left: 5px solid #16A34A !important; padding: 15px !important; border-radius: 6px !important; color: #14532D !important; font-weight: 500; }
-        .alerta-packing { background-color: #EFF6FF !important; border-left: 5px solid #3B82F6 !important; padding: 15px !important; border-radius: 6px !important; color: #1E40AF !important; font-weight: 500; }
+        .alerta-packing { background-color: #EFF6FF !important; border-left: 5px solid #3B82F6 !important; padding: 15px !important; border-radius: 6px !important; color: #14532D !important; font-weight: 500; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -109,12 +109,13 @@ elif opcion == "🚜 Agente 2: Picking":
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
     except Exception:
+        # CORREGIDO: Datos de contingencia completados y cerrados correctamente
         datos_picking_crudos = {
             'PEDIDO': ['#1024', '#1025', '#1026', '#1027', '#1028'],
             'PASILLO': ['Pasillo B', 'Pasillo A', 'Pasillo C', 'Pasillo A', 'Pasillo B'],
             'ESTANTERÍA': ['Nivel 3', 'Nivel 1', 'Nivel 2', 'Nivel 4', 'Nivel 1'],
             'ARTÍCULO': ['Filtros', 'Bujías', 'Soportes', 'Pastillas', 'Correas'],
-            'CANTIDAD': [5, 12, 8, 20, 7]
+            'CANTIDAD': [10, 20, 15, 8, 12]
         }
         df_picking = pd.DataFrame(datos_picking_crudos)
 
@@ -141,18 +142,17 @@ elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Auditoría automatizada de tolerancia de peso por bulto despachado</p>", unsafe_allow_html=True)
     st.markdown("---")
     
-    # URL de producción en vivo utilizando el nuevo GID del usuario
     URL_PACKING = "https://google.com"
     
     try:
         df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
         df_packing.columns = df_packing.columns.str.strip().str.upper()
     except Exception:
+        # CORREGIDO: Datos de contingencia completados y cerrados correctamente
         datos_packing_crudos = {
             'PEDIDO': ['#1024', '#1025', '#1026', '#1027', '#1028'],
             'CLIENTE': ['Distribuidora A', 'Logística B', 'Comercial C', 'Retail D', 'Mayorista E'],
-            'PESO TEÓRICO (KG)': [12.50, 8.20, 22.10, 14.30, 5.60],
-            'PESO BÁSCULA (KG)': [12.52, 8.45, 22.08, 14.31, 5.95],
+
 
 
 

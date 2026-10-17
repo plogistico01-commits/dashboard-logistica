@@ -14,26 +14,32 @@ st.markdown("""
         div[data-testid="stMetricLabel"] > div { color: #4B5563 !important; font-weight: 600 !important; font-size: 14px !important; }
         div[data-testid="stMetricValue"] > div { color: #111827 !important; font-weight: 700 !important; font-size: 28px !important; }
         h1, h2, h3 { color: #1F2937 !important; font-family: 'Inter', sans-serif !important; }
-        .alerta-naranja { background-color: #FFF7ED !important; border-left: 5px solid #EA580C !important; padding: 15px !important; border-radius: 6px !important; color: #C2410C !important; font-weight: 500; }
+        
+        /* Estilos de Semáforos Corporativos Premium */
+        .status-card { padding: 15px 20px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; border-left: 6px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+        .status-critico { background-color: #FEF2F2; border-color: #EF4444; color: #991B1B; }
+        .status-revision { background-color: #FFF7ED; border-color: #F97316; color: #9A3412; }
+        .status-optimo { background-color: #F0FDF4; border-color: #22C55E; color: #166534; }
+        .status-controlado { background-color: #F0F9FF; border-color: #0EA5E9; color: #075985; }
+        
         .ruta-optima { background-color: #F0FDF4 !important; border-left: 5px solid #16A34A !important; padding: 15px !important; border-radius: 6px !important; color: #14532D !important; font-weight: 500; }
     </style>
 """, unsafe_allow_html=True)
 
-# URL Base KPIs Principal
 URL_KPIS = "https://google.com"
 
 try:
     df = pd.read_csv(URL_KPIS, encoding='utf-8')
+    df.columns = df.columns.str.strip().str.upper()
+    indicadores = df.to_dict('records')
 except Exception:
-    datos_contingencia = {
-        'INDICADOR': ['Precisión de Recepción (Fill Rate)', 'Eficiencia de Picking (Ruta)', 'Desvío de Peso Packing (Báscula)', 'Logística Inversa Devoluciones'],
-        'VALOR ACTUAL': [0.3333, 0.8500, 0.0200, 0.9100],
-        'META OBJETIVO': [0.9500, 0.9800, 0.0000, 0.9500],
-        'ESTADO': ['ALERTA CRÍTICA', 'ÓPTIMO', 'CONTROLADO', 'REVISIÓN']
-    }
-    df = pd.DataFrame(datos_contingencia)
-
-df.columns = df.columns.str.strip().str.upper()
+    # Respaldo limpio formateado por si falla la red
+    indicadores = [
+        {'INDICADOR': 'Precisión de Recepción (Fill Rate)', 'VALOR ACTUAL': 0.3333, 'META OBJETIVO': 0.9500, 'ESTADO': 'ALERTA CRÍTICA'},
+        {'INDICADOR': 'Eficiencia de Picking (Ruta)', 'VALOR ACTUAL': 0.8500, 'META OBJETIVO': 0.9800, 'ESTADO': 'ÓPTIMO'},
+        {'INDICADOR': 'Desvío de Peso Packing (Báscula)', 'VALOR ACTUAL': 0.0200, 'META OBJETIVO': 0.0000, 'ESTADO': 'CONTROLADO'},
+        {'INDICADOR': 'Logística Inversa Devoluciones', 'VALOR ACTUAL': 0.9100, 'META OBJETIVO': 0.9500, 'ESTADO': 'REVISIÓN'}
+    ]
 
 st.sidebar.markdown("""
     <div style='text-align: center; padding: 15px 0;'>
@@ -73,8 +79,41 @@ if opcion == "🏠 Dashboard Principal":
         'Meta Objetivo': [95.00, 98.00, 0.00, 95.00]
     }).set_index('Indicador')
     st.bar_chart(chart_data, use_container_width=True)
-    st.markdown("<br><h3>📝 Registro de Datos Sincronizados</h3>", unsafe_allow_html=True)
-    st.dataframe(df, use_container_width=True)
+    
+    # NUEVO REEMPLAZO LOGÍSTICO: Semáforos visuales intuitivos en lugar de la tabla de datos fea
+    st.markdown("<br><h3>🚦 Estado Operativo de los Procesos</h3>", unsafe_allow_html=True)
+    
+    for ind in indicadores:
+        # Extraemos valores de manera dinámica soportando mayúsculas/minúsculas
+        nombre = ind.get('INDICADOR', 'Proceso Logístico')
+        estado = str(ind.get('ESTADO', 'REVISIÓN')).upper()
+        actual = ind.get('VALOR ACTUAL', 0)
+        meta = ind.get('META OBJETIVO', 0)
+        
+        # Formateo de porcentaje amigable para humanos
+        val_txt = f"{actual * 100:.2f}%" if actual <= 1 else f"{actual}"
+        meta_txt = f"{meta * 100:.2f}%" if meta <= 1 else f"{meta}"
+        
+        # Asignación de diseño por semáforo
+        if 'CRÍTICO' in estado or 'ALERTA' in estado:
+            clase = "status-critico"
+            icono = "🔴"
+        elif 'REVISIÓN' in estado or 'REVISION' in estado:
+            clase = "status-revision"
+            icono = "🟠"
+        elif 'ÓPTIMO' in estado or 'OPTIMO' in estado:
+            clase = "status-optimo"
+            icono = "🟢"
+        else:
+            clase = "status-controlado"
+            icono = "🔵"
+            
+        st.markdown(f"""
+            <div class="status-card {clase}">
+                <strong>{icono} {nombre}</strong> — Estatus: <u>{estado}</u> <br>
+                <span style="font-size: 13px; opacity: 0.8;">Progreso Actual: {val_txt} | Meta del Negocio: {meta_txt}</span>
+            </div>
+        """, unsafe_allow_html=True)
 
 elif opcion == "📦 Agente 1: Recepción":
     st.markdown("<h1>📦 Agente 1 - Recepción (Fill Rate)</h1>", unsafe_allow_html=True)
@@ -92,27 +131,24 @@ elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Filtro de pedidos pendientes clasificados automáticamente por ubicación física</p>", unsafe_allow_html=True)
     st.markdown("---")
     
-    # URL de Producción mapeada con el GID suministrado por el usuario
     URL_PICKING = "https://google.com"
     
     try:
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
     except Exception:
-        # CORREGIDO: Datos de contingencia estructurados de forma segura
         datos_picking_crudos = {
             'PEDIDO': ['#1024', '#1025', '#1026', '#1027', '#1028'],
             'PASILLO': ['Pasillo B', 'Pasillo A', 'Pasillo C', 'Pasillo A', 'Pasillo B'],
             'ESTANTERÍA': ['Nivel 3', 'Nivel 1', 'Nivel 2', 'Nivel 4', 'Nivel 1'],
             'ARTÍCULO': ['Filtros', 'Bujías', 'Soportes', 'Pastillas', 'Correas'],
-            'CANTIDAD': [5, 12, 8, 15, 4]
+            'CANTIDAD': [10, 15, 8, 22, 5]
         }
         df_picking = pd.DataFrame(datos_picking_crudos)
 
-    col_pasillo = 'PASILLO' if 'PASILLO' in df_picking.columns else df_picking.columns[0]
-    col_estanteria = 'ESTANTERÍA' if 'ESTANTERÍA' in df_picking.columns else df_picking.columns[1]
+    col_pasillo = 'PASILLO' if 'PASILLO' in df_picking.columns else df_picking.columns
+    col_estanteria = 'ESTANTERÍA' if 'ESTANTERÍA' in df_picking.columns else df_picking.columns
     
-    # Ordenación Lean automática en el servidor Streamlit
     df_optimizado = df_picking.sort_values(by=[col_pasillo, col_estanteria]).reset_index(drop=True)
     
     p_col1, p_col2 = st.columns(2)

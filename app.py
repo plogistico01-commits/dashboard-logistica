@@ -38,19 +38,13 @@ st.sidebar.markdown("""
     <hr style='border-color: rgba(255,255,255,0.15); margin-top: 5px;'>
 """, unsafe_allow_html=True)
 
-# Menú de navegación unificado
 opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", "📦 Agente 1: Recepción", "🚜 Agente 2: Picking", "⚖️ Agente 3: Packing"])
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
 if opcion == "🏠 Dashboard Principal":
-    t_col1, t_col2 = st.columns(2)
-    with t_col1:
-        st.markdown("<h1 style='margin-bottom: 0px;'>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
-    with t_col2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.caption("🟢 Conexión con Google Sheets Establecida")
+    st.markdown("<h1 style='margin-bottom: 0px;'>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
         
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
@@ -109,20 +103,18 @@ elif opcion == "🚜 Agente 2: Picking":
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
     except Exception:
-        # CORREGIDO: Lista de cantidad correctamente cerrada con corchete para evitar errores
-        datos_picking_crudos = {
-            'PEDIDO': ['#1024', '#1025', '#1026', '#1027', '#1028'],
-            'PASILLO': ['Pasillo B', 'Pasillo A', 'Pasillo C', 'Pasillo A', 'Pasillo B'],
-            'ESTANTERÍA': ['Nivel 3', 'Nivel 1', 'Nivel 2', 'Nivel 4', 'Nivel 1'],
-            'ARTÍCULO': ['Filtros', 'Bujías', 'Soportes', 'Pastillas', 'Correas'],
-            'CANTIDAD': [10, 15, 8, 4, 12]
-        }
-        df_picking = pd.DataFrame(datos_picking_crudos)
+        # Generación automática de seguridad: Cero riesgo de llaves abiertas
+        df_picking = pd.DataFrame(columns=['PEDIDO', 'PASILLO', 'ESTANTERÍA', 'ARTÍCULO', 'CANTIDAD'])
+        df_picking.loc[0] = ['#1024', 'Pasillo B', 'Nivel 3', 'Filtros', 10]
+        df_picking.loc[1] = ['#1025', 'Pasillo A', 'Nivel 1', 'Bujías', 15]
 
-    col_pasillo = 'PASILLO' if 'PASILLO' in df_picking.columns else df_picking.columns
-    col_estanteria = 'ESTANTERÍA' if 'ESTANTERÍA' in df_picking.columns else df_picking.columns
+    col_pasillo = 'PASILLO' if 'PASILLO' in df_picking.columns else df_picking.columns[0]
+    col_estanteria = 'ESTANTERÍA' if 'ESTANTERÍA' in df_picking.columns else df_picking.columns[0]
     
-    df_optimizado = df_picking.sort_values(by=[col_pasillo, col_estanteria]).reset_index(drop=True)
+    if not df_picking.empty:
+        df_optimizado = df_picking.sort_values(by=[col_pasillo, col_estanteria]).reset_index(drop=True)
+    else:
+        df_optimizado = df_picking
     
     p_col1, p_col2 = st.columns(2)
     with p_col1:
@@ -148,10 +140,17 @@ elif opcion == "⚖️ Agente 3: Packing":
         df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
         df_packing.columns = df_packing.columns.str.strip().str.upper()
     except Exception:
-        # VALIDADO: Estructura de respaldo de packing limpia y cerrada
-        datos_packing_crudos = {
-            'PEDIDO': ['#1024', '#1025', '#1026', '#1027', '#1028'],
-            'CLIENTE': ['Distribuidora A', 'Logística B', 'Comercial C', 'Retail D', 'Mayorista E'],
+        # Generación automática de seguridad: Cero riesgo de llaves abiertas
+        df_packing = pd.DataFrame(columns=['PEDIDO', 'CLIENTE', 'PESO TEÓRICO (KG)', 'PESO BÁSCULA (KG)', 'DESVÍO (KG)', 'ESTAR ALERTA'])
+        df_packing.loc[0] = ['#1024', 'Distribuidora A', 12.50, 12.52, 0.02, 'OK']
+        df_packing.loc[1] = ['#1025', 'Logística B', 8.20, 8.45, 0.25, 'EXCESO DE PESO']
+    
+    pa_col1, pa_col2 = st.columns(2)
+    with pa_col1:
+        st.metric(label="Desvío Promedio General", value="2.00%", delta="+2.00% Tolerancia Máxima")
+    with pa_col2:
+        st.markdown("""
+            <div class='alerta-packing'>
 
 
 

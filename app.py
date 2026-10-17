@@ -90,7 +90,7 @@ elif opcion == "📦 Agente 1: Recepción":
     st.metric(label="Precisión de Recepción Actual", value="33.33%", delta="-61.67% vs Meta")
     st.markdown("<br>", unsafe_allow_html=True)
     st.progress(0.33)
-    st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drásticamente por debajo del objetivo del 95.00%.")
+    st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drácticamente por debajo del objetivo del 95.00%.")
 
 elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<h1>🚜 Agente 2 - Optimización de Rutas (Picking)</h1>", unsafe_allow_html=True)
@@ -146,6 +146,8 @@ elif opcion == "⚖️ Agente 3: Packing":
         df_packing.columns = df_packing.columns.str.strip().str.upper()
     except Exception:
         df_packing = pd.DataFrame()
+    
+
     
 
 

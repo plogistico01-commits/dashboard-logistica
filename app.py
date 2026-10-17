@@ -29,18 +29,18 @@ except Exception:
 # Limpieza estándar de columnas
 df.columns = df.columns.str.strip().str.upper()
 
-# 2. Barra Lateral de Navegación Ejecutiva (Corrección de sintaxis nativa)
+# 2. Barra Lateral de Navegación Ejecutiva
 st.sidebar.markdown("<h2 style='text-align: center; color: #00FFCC;'>🎛️ CONTROL LOGÍSTICO</h2>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 opcion = st.sidebar.radio("Selección de Agente:", ["🏠 Panel General de KPIs", "📦 Agente 1: Recepción"])
 st.sidebar.markdown("---")
 st.sidebar.caption("🟢 Servidor Serverless Cloud Activo (0 USD)")
 
-# Mapeo automático de columnas
-col_ind = [c for c in df.columns if 'INDICA' in c or 'KPI' in c]
-col_val = [c for c in df.columns if 'VALOR' in c or 'ACTUAL' in c]
-col_met = [c for c in df.columns if 'META' in c or 'OBJETI' in c]
-col_est = [c for c in df.columns if 'ESTA' in c]
+# Mapeo automático de columnas fijando los nombres normalizados en mayúsculas
+c_ind = 'INDICADOR'
+c_val = 'VALOR ACTUAL'
+c_met = 'META OBJETIVO'
+c_est = 'ESTADO'
 
 # 3. Renderizado de la Pantalla Principal según el Menú
 if opcion == "🏠 Panel General de KPIs":
@@ -66,15 +66,20 @@ if opcion == "🏠 Panel General de KPIs":
     # Gráfico de Barras Decorativo de Comparativa Táctica
     st.markdown("### 📈 Rendimiento vs Metas del Proyecto")
     
-    # Preparamos los datos limpios para el gráfico nativo
-    chart_data = pd.DataFrame({
-        'Indicador': df[col_ind].astype(str).tolist(),
-        'Progreso Real': (df[col_val].astype(float) * 100).tolist(),
-        'Meta Objetivo': (df[col_met].astype(float) * 100).tolist()
-    }).set_index('Indicador')
-    
-    # Renderizado del gráfico interactivo con barras duales
-    st.bar_chart(chart_data, use_container_width=True)
+    try:
+        # Extracción limpia y forzada de columnas individuales
+        chart_data = pd.DataFrame({
+            'Indicador': df[c_ind].astype(str).tolist(),
+            'Progreso Real': (df[c_val].astype(float) * 100).tolist(),
+            'Meta Objetivo': (df[c_met].astype(float) * 100).tolist()
+        }).set_index('Indicador')
+        
+        # Renderizado del gráfico interactivo con barras duales
+        st.bar_chart(chart_data, use_container_width=True)
+    except Exception as e_chart:
+        st.warning(f"Renderizando gráfico integrado del sistema... (Detalle: {e_chart})")
+        # Gráfico alternativo simple si las columnas mutan de tipo
+        st.bar_chart(df[[c_val, c_met]])
     
     # Tabla consolidada estilizada al final
     st.markdown("### 📝 Registro Maestro de Auditoría")
@@ -82,13 +87,13 @@ if opcion == "🏠 Panel General de KPIs":
 
 elif opcion == "📦 Agente 1: Recepción":
     st.title("📦 Agente 1 - Recepción (Fill Rate)")
-    kpi = df[df[col_ind].astype(str).str.contains("Fill Rate|PRECISION|RECEPCION", case=False, na=False)]
+    kpi = df[df[c_ind].astype(str).str.contains("Fill Rate|PRECISION|RECEPCION", case=False, na=False)]
     
     if not kpi.empty:
-        val_actual = float(kpi.iloc[0][col_val].replace(',', '.')) if isinstance(kpi.iloc[0][col_val], str) else float(kpi.iloc[0][col_val])
+        val_actual = float(kpi.iloc[0][c_val])
         st.metric(label="Precisión de Recepción (Fill Rate)", value=f"{val_actual * 100:.2f}%", delta="-61.67% vs Meta")
         st.progress(min(max(val_actual, 0.0), 1.0))
-        st.error(f"Alerta del Agente 1: El estado actual es '{kpi.iloc[0][col_est]}'. Nivel crítico bajo supervisor.")
+        st.error(f"Alerta del Agente 1: El estado actual es '{kpi.iloc[0][c_est]}'. Nivel crítico bajo supervisor.")
 
 
 

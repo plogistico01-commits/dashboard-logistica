@@ -3,6 +3,7 @@ import pandas as pd
 
 st.set_page_config(page_title="Proyecto Logístico - Dashboard", layout="wide", initial_sidebar_state="expanded")
 
+# Inyección de CSS limpia y cerrada de forma segura
 st.markdown("""
     <style>
         .stApp { background-color: #F3F4F6 !important; }
@@ -14,22 +15,17 @@ st.markdown("""
         div[data-testid="stMetricLabel"] > div { color: #4B5563 !important; font-weight: 600 !important; font-size: 14px !important; }
         div[data-testid="stMetricValue"] > div { color: #111827 !important; font-weight: 700 !important; font-size: 28px !important; }
         h1, h2, h3 { color: #1F2937 !important; font-family: 'Inter', sans-serif !important; }
-        
-        /* Estilos de Semáforos Corporativos Premium Fijos */
         .status-card { padding: 15px 20px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; border-left: 6px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
         .status-critico { background-color: #FEF2F2; border-color: #EF4444; color: #991B1B; }
         .status-revision { background-color: #FFF7ED; border-color: #F97316; color: #9A3412; }
         .status-optimo { background-color: #F0FDF4; border-color: #22C55E; color: #166534; }
         .status-controlado { background-color: #F0F9FF; border-color: #0EA5E9; color: #075985; }
-        
-        .ruta-optima { background-color: #F0FDF4 !important; border-left: 5px solid #16A34A !important; padding: 15px !important; border-radius: 6px !important; color: #14532D !important; font-weight: 500; }
-        .alerta-packing { background-color: #EFF6FF !important; border-left: 5px solid #3B82F6 !important; padding: 15px !important; border-radius: 6px !important; color: #1E40AF !important; font-weight: 500; }
     </style>
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown("""
     <div style='text-align: center; padding: 15px 0;'>
-        <div style='background-color: #FFFFFF; width: 75px; height: 75px; border-radius: 50%; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.15);'>
+        <div style='background-color: #FFFFFF; width: 75px; height: 75px; border-radius: 50%; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;'>
             <span style='font-size: 38px; color: #1E3A8A;'>👤</span>
         </div>
         <h3 style='color: #FFFFFF; margin: 0; font-size: 18px; font-weight: 600;'>Proyecto Logístico</h3>
@@ -43,7 +39,7 @@ st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>"
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
 if opcion == "🏠 Dashboard Principal":
-    st.markdown("<h1 style='margin-bottom: 0px;'>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
+    st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
         
     st.markdown("<br>", unsafe_allow_html=True)
@@ -90,7 +86,7 @@ elif opcion == "📦 Agente 1: Recepción":
         st.markdown("<br>", unsafe_allow_html=True)
         st.progress(0.33)
     with c2:
-        st.markdown("<div class='alerta-naranja'>⚠️ <strong>Alerta del Agente 1:</strong> El nivel de servicio (Fill Rate) se encuentra drásticamente por debajo del objetivo del 95.00%.</div>", unsafe_allow_html=True)
+        st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drásticamente por debajo del objetivo del 95.00%.")
 
 elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<h1>🚜 Agente 2 - Optimización de Rutas (Picking)</h1>", unsafe_allow_html=True)
@@ -103,13 +99,12 @@ elif opcion == "🚜 Agente 2: Picking":
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
     except Exception:
-        # Generación automática de seguridad: Cero riesgo de llaves abiertas
         df_picking = pd.DataFrame(columns=['PEDIDO', 'PASILLO', 'ESTANTERÍA', 'ARTÍCULO', 'CANTIDAD'])
         df_picking.loc[0] = ['#1024', 'Pasillo B', 'Nivel 3', 'Filtros', 10]
         df_picking.loc[1] = ['#1025', 'Pasillo A', 'Nivel 1', 'Bujías', 15]
 
-    col_pasillo = 'PASILLO' if 'PASILLO' in df_picking.columns else df_picking.columns[0]
-    col_estanteria = 'ESTANTERÍA' if 'ESTANTERÍA' in df_picking.columns else df_picking.columns[0]
+    col_pasillo = 'PASILLO' if 'PASILLO' in df_picking.columns else df_picking.columns[1]
+    col_estanteria = 'ESTANTERÍA' if 'ESTANTERÍA' in df_picking.columns else df_picking.columns[2]
     
     if not df_picking.empty:
         df_optimizado = df_picking.sort_values(by=[col_pasillo, col_estanteria]).reset_index(drop=True)
@@ -120,11 +115,7 @@ elif opcion == "🚜 Agente 2: Picking":
     with p_col1:
         st.metric(label="Eficiencia de la Ruta Activa", value="85.00%", delta="-13.00% vs Objetivo (98%)")
     with p_col2:
-        st.markdown("""
-            <div class='ruta-optima'>
-                ✅ <strong>Ruta Logística Secuencial Activa:</strong> Filas reorganizadas automáticamente de extremo a extremo del pasillo para minimizar desplazamientos nulos de los operarios.
-            </div>
-        """, unsafe_allow_html=True)
+        st.success("✅ Ruta Logística Secuencial Activa: Filas reorganizadas automáticamente de extremo a extremo del pasillo para minimizar desplazamientos nulos de los operarios.")
         
     st.markdown("<br><h3>📋 Hoja de Ruta de Picking Generada (Tiempo Real)</h3>", unsafe_allow_html=True)
     st.dataframe(df_optimizado, use_container_width=True)
@@ -140,7 +131,6 @@ elif opcion == "⚖️ Agente 3: Packing":
         df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
         df_packing.columns = df_packing.columns.str.strip().str.upper()
     except Exception:
-        # Generación automática de seguridad: Cero riesgo de llaves abiertas
         df_packing = pd.DataFrame(columns=['PEDIDO', 'CLIENTE', 'PESO TEÓRICO (KG)', 'PESO BÁSCULA (KG)', 'DESVÍO (KG)', 'ESTAR ALERTA'])
         df_packing.loc[0] = ['#1024', 'Distribuidora A', 12.50, 12.52, 0.02, 'OK']
         df_packing.loc[1] = ['#1025', 'Logística B', 8.20, 8.45, 0.25, 'EXCESO DE PESO']
@@ -149,8 +139,10 @@ elif opcion == "⚖️ Agente 3: Packing":
     with pa_col1:
         st.metric(label="Desvío Promedio General", value="2.00%", delta="+2.00% Tolerancia Máxima")
     with pa_col2:
-        st.markdown("""
-            <div class='alerta-packing'>
+        st.warning("🔍 Auditoría de Báscula: Se detectaron bultos con variaciones por encima del margen permitido. Verificar contenido en estación de empaque antes del flejado.")
+        
+    st.markdown("<br><h3>📋 Auditoría de Pesaje de Bultos Pendientes (Tiempo Real)</h3>", unsafe_allow_html=True)
+    st.dataframe(df_packing, use_container_width=True)
 
 
 

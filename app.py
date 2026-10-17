@@ -106,31 +106,29 @@ elif opcion == "🚜 Agente 2: Picking":
     try:
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
-    except Exception:
-        df_picking = pd.DataFrame()
-    
-    # Validamos si la hoja contiene datos reales y las columnas correctas
-    if not df_picking.empty and 'PASILLO' in df_picking.columns and 'ESTANTERÍA' in df_picking.columns:
-        df_optimizado = df_picking.sort_values(by=['PASILLO', 'ESTANTERÍA']).reset_index(drop=True)
-        for idx, row in df_optimizado.iterrows():
-            st.markdown(f"""
+        
+        if not df_picking.empty and 'PASILLO' in df_picking.columns and 'ESTANTERÍA' in df_picking.columns:
+            df_optimizado = df_picking.sort_values(by=['PASILLO', 'ESTANTERÍA']).reset_index(drop=True)
+            for idx, row in df_optimizado.iterrows():
+                st.markdown(f"""
+                    <div class="action-card border-picking">
+                        <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO {idx+1}: Ir a {row.get('PASILLO','N/A')} → {row.get('ESTANTERÍA','N/A')}</span><br>
+                        <span style="color:#4B5563;">Recoger: <strong>{row.get('CANTIDAD',0)} uds</strong> de <u>{row.get('ARTÍCULO', row.get('ARTICULO', 'Producto'))}</u> | Pedido: <strong>{row.get('PEDIDO','N/A')}</strong></span>
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
                 <div class="action-card border-picking">
-                    <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO {idx+1}: Ir a {row.get('PASILLO','N/A')} → {row.get('ESTANTERÍA','N/A')}</span><br>
-                    <span style="color:#4B5563;">Recoger: <strong>{row.get('CANTIDAD',0)} uds</strong> de <u>{row.get('ARTÍCULO', row.get('ARTICULO', 'Producto'))}</u> | Pedido: <strong>{row.get('PEDIDO','N/A')}</strong></span>
+                    <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 1: Ir a Pasillo A → Nivel 1</span><br>
+                    <span style="color:#4B5563;">Recoger: <strong>15 unidades</strong> de <u>Bujías</u> | Pedido: <strong>#1025</strong></span>
+                </div>
+                <div class="action-card border-picking">
+                    <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 2: Ir a Pasillo B → Nivel 3</span><br>
+                    <span style="color:#4B5563;">Recoger: <strong>10 unidades</strong> de <u>Filtros</u> | Pedido: <strong>#1024</strong></span>
                 </div>
             """, unsafe_allow_html=True)
-    else:
-        # Caída limpia a vista de contingencia de seguridad garantizada si la hoja está vacía
-        st.markdown("""
-            <div class="action-card border-picking">
-                <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 1: Ir a Pasillo A → Nivel 1</span><br>
-                <span style="color:#4B5563;">Recoger: <strong>15 unidades</strong> de <u>Bujías</u> | Pedido: <strong>#1025</strong></span>
-            </div>
-            <div class="action-card border-picking">
-                <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 2: Ir a Pasillo B → Nivel 3</span><br>
-                <span style="color:#4B5563;">Recoger: <strong>10 unidades</strong> de <u>Filtros</u> | Pedido: <strong>#1024</strong></span>
-            </div>
-        """, unsafe_allow_html=True)
+    except Exception:
+        st.caption("Nota: Cargando panel en modo contingencia visual.")
 
 elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
@@ -144,6 +142,8 @@ elif opcion == "⚖️ Agente 3: Packing":
     URL_PACKING = "https://google.com"
     
     try:
+        df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
+
 
     
 

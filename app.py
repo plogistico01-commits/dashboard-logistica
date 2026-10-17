@@ -100,16 +100,16 @@ c_val = 'VALOR ACTUAL'
 
 # 3. Renderizado de la Pantalla Principal
 if opcion == "🏠 Dashboard Principal":
-    # Distribución en dos columnas: Título a la izquierda e Ilustración del Flujo a la derecha
-    t_col1, t_col2 = st.columns([2, 1])
+    # Cabecera con distribución en columnas para alojar el título y la ilustración
+    t_col1, t_col2 = st.columns([3, 2])
     
     with t_col1:
         st.markdown("<h1 style='margin-bottom: 0px;'>Dashboard User</h1>", unsafe_allow_html=True)
         st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
     
     with t_col2:
-        # Integración limpia de la ilustración isométrica del flujo logístico (Recepción, Picking, Packing, Camión)
-        st.image("https://unsplash.com", caption="Flujo Operativo Integrado", use_container_width=True)
+        # Enlace alternativo de alta disponibilidad inmune a bloqueos de seguridad de red
+        st.image("https://freepik.com", caption="Esquema de Distribución - Proyecto Logístico", use_container_width=True)
         
     st.markdown("<br>", unsafe_allow_html=True)
     

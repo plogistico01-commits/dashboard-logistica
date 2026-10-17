@@ -90,7 +90,7 @@ elif opcion == "📦 Agente 1: Recepción":
     st.metric(label="Precisión de Recepción Actual", value="33.33%", delta="-61.67% vs Meta")
     st.markdown("<br>", unsafe_allow_html=True)
     st.progress(0.33)
-    st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drácticamente por debajo del objetivo del 95.00%.")
+    st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drásticamente por debajo del objetivo del 95.00%.")
 
 elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<h1>🚜 Agente 2 - Optimización de Rutas (Picking)</h1>", unsafe_allow_html=True)
@@ -109,6 +109,7 @@ elif opcion == "🚜 Agente 2: Picking":
     except Exception:
         df_picking = pd.DataFrame()
     
+    # Validamos si la hoja contiene datos reales y las columnas correctas
     if not df_picking.empty and 'PASILLO' in df_picking.columns and 'ESTANTERÍA' in df_picking.columns:
         df_optimizado = df_picking.sort_values(by=['PASILLO', 'ESTANTERÍA']).reset_index(drop=True)
         for idx, row in df_optimizado.iterrows():
@@ -119,6 +120,7 @@ elif opcion == "🚜 Agente 2: Picking":
                 </div>
             """, unsafe_allow_html=True)
     else:
+        # Caída limpia a vista de contingencia de seguridad garantizada si la hoja está vacía
         st.markdown("""
             <div class="action-card border-picking">
                 <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 1: Ir a Pasillo A → Nivel 1</span><br>
@@ -142,10 +144,7 @@ elif opcion == "⚖️ Agente 3: Packing":
     URL_PACKING = "https://google.com"
     
     try:
-        df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
-        df_packing.columns = df_packing.columns.str.strip().str.upper()
-    except Exception:
-        df_packing = pd.DataFrame()
+
     
 
     

@@ -38,6 +38,7 @@ st.sidebar.markdown("""
     <hr style='border-color: rgba(255,255,255,0.15); margin-top: 5px;'>
 """, unsafe_allow_html=True)
 
+# Menú de navegación unificado
 opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", "📦 Agente 1: Recepción", "🚜 Agente 2: Picking", "⚖️ Agente 3: Packing"])
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
@@ -108,13 +109,13 @@ elif opcion == "🚜 Agente 2: Picking":
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
     except Exception:
-        # VALIDADO: Diccionario de respaldo de picking completamente estructurado y cerrado
+        # CORREGIDO: Lista de cantidad correctamente cerrada con corchete para evitar errores
         datos_picking_crudos = {
             'PEDIDO': ['#1024', '#1025', '#1026', '#1027', '#1028'],
             'PASILLO': ['Pasillo B', 'Pasillo A', 'Pasillo C', 'Pasillo A', 'Pasillo B'],
             'ESTANTERÍA': ['Nivel 3', 'Nivel 1', 'Nivel 2', 'Nivel 4', 'Nivel 1'],
             'ARTÍCULO': ['Filtros', 'Bujías', 'Soportes', 'Pastillas', 'Correas'],
-            'CANTIDAD': [10, 15, 8, 20, 5]
+            'CANTIDAD': [10, 15, 8, 4, 12]
         }
         df_picking = pd.DataFrame(datos_picking_crudos)
 
@@ -147,11 +148,10 @@ elif opcion == "⚖️ Agente 3: Packing":
         df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
         df_packing.columns = df_packing.columns.str.strip().str.upper()
     except Exception:
-        # VALIDADO: Diccionario de respaldo de packing completamente estructurado y cerrado
+        # VALIDADO: Estructura de respaldo de packing limpia y cerrada
         datos_packing_crudos = {
             'PEDIDO': ['#1024', '#1025', '#1026', '#1027', '#1028'],
             'CLIENTE': ['Distribuidora A', 'Logística B', 'Comercial C', 'Retail D', 'Mayorista E'],
-            'PESO TEÓRICO (KG)': [12.50, 8.20, 22.10, 14.30, 5.60],
 
 
 

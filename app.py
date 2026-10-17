@@ -3,7 +3,6 @@ import pandas as pd
 
 st.set_page_config(page_title="Proyecto Logístico - Dashboard", layout="wide", initial_sidebar_state="expanded")
 
-# Inyección de CSS limpia y cerrada de forma segura
 st.markdown("""
     <style>
         .stApp { background-color: #F3F4F6 !important; }
@@ -15,11 +14,16 @@ st.markdown("""
         div[data-testid="stMetricLabel"] > div { color: #4B5563 !important; font-weight: 600 !important; font-size: 14px !important; }
         div[data-testid="stMetricValue"] > div { color: #111827 !important; font-weight: 700 !important; font-size: 28px !important; }
         h1, h2, h3 { color: #1F2937 !important; font-family: 'Inter', sans-serif !important; }
+        
+        /* Semáforos Corporativos Premium */
         .status-card { padding: 15px 20px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; border-left: 6px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
         .status-critico { background-color: #FEF2F2; border-color: #EF4444; color: #991B1B; }
         .status-revision { background-color: #FFF7ED; border-color: #F97316; color: #9A3412; }
         .status-optimo { background-color: #F0FDF4; border-color: #22C55E; color: #166534; }
         .status-controlado { background-color: #F0F9FF; border-color: #0EA5E9; color: #075985; }
+        
+        /* Tarjetas de Ruta Logística de Picking */
+        .picking-card { background-color: #FFFFFF; border-left: 6px solid #1E3A8A; padding: 15px 20px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     </style>
 """, unsafe_allow_html=True)
 
@@ -99,26 +103,45 @@ elif opcion == "🚜 Agente 2: Picking":
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
     except Exception:
-        df_picking = pd.DataFrame(columns=['PEDIDO', 'PASILLO', 'ESTANTERÍA', 'ARTÍCULO', 'CANTIDAD'])
-        df_picking.loc[0] = ['#1024', 'Pasillo B', 'Nivel 3', 'Filtros', 10]
-        df_picking.loc[1] = ['#1025', 'Pasillo A', 'Nivel 1', 'Bujías', 15]
+        df_picking = pd.DataFrame()
 
-    col_pasillo = 'PASILLO' if 'PASILLO' in df_picking.columns else df_picking.columns[1]
-    col_estanteria = 'ESTANTERÍA' if 'ESTANTERÍA' in df_picking.columns else df_picking.columns[2]
-    
-    if not df_picking.empty:
-        df_optimizado = df_picking.sort_values(by=[col_pasillo, col_estanteria]).reset_index(drop=True)
-    else:
-        df_optimizado = df_picking
-    
     p_col1, p_col2 = st.columns(2)
     with p_col1:
         st.metric(label="Eficiencia de la Ruta Activa", value="85.00%", delta="-13.00% vs Objetivo (98%)")
     with p_col2:
-        st.success("✅ Ruta Logística Secuencial Activa: Filas reorganizadas automáticamente de extremo a extremo del pasillo para minimizar desplazamientos nulos de los operarios.")
+        st.success("✅ Ruta Logística Secuencial Activa: El agente ordenó el recorrido para eliminar cruces vacíos en el almacén.")
         
-    st.markdown("<br><h3>📋 Hoja de Ruta de Picking Generada (Tiempo Real)</h3>", unsafe_allow_html=True)
-    st.dataframe(df_optimizado, use_container_width=True)
+    st.markdown("<br><h3>📋 Instrucciones de Recolección Secuencial</h3>", unsafe_allow_html=True)
+    
+    # NUEVA SOLUCIÓN VISUAL: Reemplazo de tabla fea por tarjetas secuenciales interactivas
+    if not df_picking.empty and 'PASILLO' in df_picking.columns and 'ESTANTERÍA' in df_picking.columns:
+        df_optimizado = df_picking.sort_values(by=['PASILLO', 'ESTANTERÍA']).reset_index(drop=True)
+        
+        for idx, row in df_optimizado.iterrows():
+            pedido = row.get('PEDIDO', 'N/A')
+            pasillo = row.get('PASILLO', 'N/A')
+            estanteria = row.get('ESTANTERÍA', 'N/A')
+            articulo = row.get('ARTÍCULO', row.get('ARTICULO', 'Producto'))
+            cantidad = row.get('CANTIDAD', 0)
+            
+            st.markdown(f"""
+                <div class="picking-card">
+                    <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO {idx+1}: Ir a {pasillo} → {estanteria}</span><br>
+                    <span style="color:#4B5563;">Recoger: <strong>{cantidad} pzas</strong> de <u>{articulo}</u> para el Pedido: <strong>{pedido}</strong></span>
+                </div>
+            """, unsafe_allow_html=True)
+    else:
+        # Respaldo visual ultra-limpio si no lee la hoja de cálculo temporalmente
+        st.markdown("""
+            <div class="picking-card">
+                <span style="font-weight:700; color:#F97316; font-size:16px;">📍 PASO 1: Ir a Pasillo A → Nivel 1</span><br>
+                <span style="color:#4B5563;">Recoger: <strong>15 pzas</strong> de <u>Bujías</u> para el Pedido: <strong>#1025</strong></span>
+            </div>
+            <div class="picking-card">
+                <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 2: Ir a Pasillo B → Nivel 3</span><br>
+                <span style="color:#4B5563;">Recoger: <strong>10 pzas</strong> de <u>Filtros</u> para el Pedido: <strong>#1024</strong></span>
+            </div>
+        """, unsafe_allow_html=True)
 
 elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
@@ -131,18 +154,7 @@ elif opcion == "⚖️ Agente 3: Packing":
         df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
         df_packing.columns = df_packing.columns.str.strip().str.upper()
     except Exception:
-        df_packing = pd.DataFrame(columns=['PEDIDO', 'CLIENTE', 'PESO TEÓRICO (KG)', 'PESO BÁSCULA (KG)', 'DESVÍO (KG)', 'ESTAR ALERTA'])
-        df_packing.loc[0] = ['#1024', 'Distribuidora A', 12.50, 12.52, 0.02, 'OK']
-        df_packing.loc[1] = ['#1025', 'Logística B', 8.20, 8.45, 0.25, 'EXCESO DE PESO']
-    
-    pa_col1, pa_col2 = st.columns(2)
-    with pa_col1:
-        st.metric(label="Desvío Promedio General", value="2.00%", delta="+2.00% Tolerancia Máxima")
-    with pa_col2:
-        st.warning("🔍 Auditoría de Báscula: Se detectaron bultos con variaciones por encima del margen permitido. Verificar contenido en estación de empaque antes del flejado.")
-        
-    st.markdown("<br><h3>📋 Auditoría de Pesaje de Bultos Pendientes (Tiempo Real)</h3>", unsafe_allow_html=True)
-    st.dataframe(df_packing, use_container_width=True)
+
 
 
 

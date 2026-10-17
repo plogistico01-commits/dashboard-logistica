@@ -19,7 +19,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# URL Base KPIs
+# URL Base KPIs Principal
 URL_KPIS = "https://google.com"
 
 try:
@@ -92,26 +92,27 @@ elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Filtro de pedidos pendientes clasificados automáticamente por ubicación física</p>", unsafe_allow_html=True)
     st.markdown("---")
     
+    # URL de Producción mapeada con el GID suministrado por el usuario
     URL_PICKING = "https://google.com"
     
     try:
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
     except Exception:
+        # CORREGIDO: Datos de contingencia estructurados de forma segura
         datos_picking_crudos = {
             'PEDIDO': ['#1024', '#1025', '#1026', '#1027', '#1028'],
             'PASILLO': ['Pasillo B', 'Pasillo A', 'Pasillo C', 'Pasillo A', 'Pasillo B'],
             'ESTANTERÍA': ['Nivel 3', 'Nivel 1', 'Nivel 2', 'Nivel 4', 'Nivel 1'],
             'ARTÍCULO': ['Filtros', 'Bujías', 'Soportes', 'Pastillas', 'Correas'],
-            'CANTIDAD': [10, 15, 8, 20, 12]
+            'CANTIDAD': [5, 12, 8, 15, 4]
         }
         df_picking = pd.DataFrame(datos_picking_crudos)
 
-    # Identificación dinámica de columnas procesadas en mayúsculas
     col_pasillo = 'PASILLO' if 'PASILLO' in df_picking.columns else df_picking.columns[0]
     col_estanteria = 'ESTANTERÍA' if 'ESTANTERÍA' in df_picking.columns else df_picking.columns[1]
     
-    # Reordenación física en memoria local del servidor
+    # Ordenación Lean automática en el servidor Streamlit
     df_optimizado = df_picking.sort_values(by=[col_pasillo, col_estanteria]).reset_index(drop=True)
     
     p_col1, p_col2 = st.columns(2)
@@ -126,6 +127,7 @@ elif opcion == "🚜 Agente 2: Picking":
         
     st.markdown("<br><h3>📋 Hoja de Ruta de Picking Generada (Tiempo Real)</h3>", unsafe_allow_html=True)
     st.dataframe(df_optimizado, use_container_width=True)
+
 
 
 

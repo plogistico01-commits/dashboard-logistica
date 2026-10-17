@@ -3,12 +3,16 @@ import pandas as pd
 
 st.set_page_config(page_title="Logística Lean", layout="wide")
 
-# PUENTE EVASIVO LEAN: Obliga a Google a extraer únicamente los datos de la pestaña KPI sin importar el peso del archivo
-URL = "https://google.com"
+# CONEXIÓN AVANZADA LEAN: Usa la API de visualización de Google que obliga a respetar el GID en archivos masivos
+SHEET_ID = "1xaPnDFIBd0Lwy_Z7wVI-SdsxSq20wg7fKtLDypjsd4I"
+URL = f"https://google.com{SHEET_ID}/gviz/tq?tqx=out:csv&gid=1440866900"
 
 try:
-    # Descarga directa y limpia de los datos crudos
+    # Descarga directa forzada por API de la pestaña Dashboard_KPIs
     df = pd.read_csv(URL)
+    
+    # Eliminamos columnas vacías que a veces genera Google Sheets
+    df = df.dropna(how='all', axis=1)
     
     # Normalización automática de los encabezados
     df.columns = df.columns.str.strip().str.upper()
@@ -16,7 +20,7 @@ try:
     st.sidebar.title("LOGÍSTICA LEAN")
     opcion = st.sidebar.radio("Agentes Activos:", ["📦 Agente 1: Recepción", "🏠 Ver Datos Crudos"])
     
-    # Buscamos columnas reales de forma inteligente
+    # Buscamos columnas reales de forma elástica
     col_indicador = [c for c in df.columns if 'INDICA' in c or 'KPI' in c or 'NOMBRE' in c or 'MÉTRICA' in c]
     col_valores = [c for c in df.columns if 'VALOR' in c or 'ACTUAL' in c or 'CUMPLI' in c or 'DATO' in c]
     
@@ -27,7 +31,7 @@ try:
             c_ind = col_indicador[0]
             c_val = col_valores[0]
             
-            # Buscamos la fila del indicador de recepción
+            # Buscamos la fila del indicador de recepción de manera exacta
             kpi = df[df[c_ind].astype(str).str.contains("Fill Rate|PRECISION|RECEPCION", case=False, na=False)]
             
             if not kpi.empty:
@@ -43,7 +47,7 @@ try:
                 st.metric(label=f"Métrica: {kpi.iloc[0][c_ind]}", value=f"{val_actual * 100:.2f}%")
                 st.progress(min(max(val_actual, 0.0), 1.0))
             else:
-                st.warning("No se encontró la fila 'Fill Rate' en los indicadores.")
+                st.warning("No se encontró la fila 'Fill Rate' o 'Recepción' en los indicadores.")
                 st.info("Filas reales encontradas en esta pestaña:")
                 st.write(list(df[c_ind].unique()))
         else:
@@ -56,7 +60,8 @@ try:
         st.dataframe(df, use_container_width=True)
 
 except Exception as e:
-    st.error(f"Error al conectar con la pestaña logísticamente estructurada: {e}")
+    st.error(f"Error crítico en el mapeo de la API de Google: {e}")
+
 
 
 

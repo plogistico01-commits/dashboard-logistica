@@ -98,19 +98,20 @@ elif opcion == "🚜 Agente 2: Picking":
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
     except Exception:
-        # CORREGIDO: Datos de contingencia completados correctamente para evitar rupturas de tabla
         datos_picking_crudos = {
             'PEDIDO': ['#1024', '#1025', '#1026', '#1027', '#1028'],
             'PASILLO': ['Pasillo B', 'Pasillo A', 'Pasillo C', 'Pasillo A', 'Pasillo B'],
             'ESTANTERÍA': ['Nivel 3', 'Nivel 1', 'Nivel 2', 'Nivel 4', 'Nivel 1'],
             'ARTÍCULO': ['Filtros', 'Bujías', 'Soportes', 'Pastillas', 'Correas'],
-            'CANTIDAD': [10, 5, 2, 20, 15]
+            'CANTIDAD': [10, 15, 8, 20, 12]
         }
         df_picking = pd.DataFrame(datos_picking_crudos)
 
+    # Identificación dinámica de columnas procesadas en mayúsculas
     col_pasillo = 'PASILLO' if 'PASILLO' in df_picking.columns else df_picking.columns[0]
-    col_estanteria = 'ESTANTERÍA' if 'ESTANTERÍA' in df_picking.columns else df_picking.columns[0]
+    col_estanteria = 'ESTANTERÍA' if 'ESTANTERÍA' in df_picking.columns else df_picking.columns[1]
     
+    # Reordenación física en memoria local del servidor
     df_optimizado = df_picking.sort_values(by=[col_pasillo, col_estanteria]).reset_index(drop=True)
     
     p_col1, p_col2 = st.columns(2)

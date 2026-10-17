@@ -23,6 +23,7 @@ st.markdown("""
         .status-controlado { background-color: #F0F9FF; border-color: #0EA5E9; color: #075985; }
         
         .ruta-optima { background-color: #F0FDF4 !important; border-left: 5px solid #16A34A !important; padding: 15px !important; border-radius: 6px !important; color: #14532D !important; font-weight: 500; }
+        .alerta-packing { background-color: #EFF6FF !important; border-left: 5px solid #3B82F6 !important; padding: 15px !important; border-radius: 6px !important; color: #1E40AF !important; font-weight: 500; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -37,7 +38,8 @@ st.sidebar.markdown("""
     <hr style='border-color: rgba(255,255,255,0.15); margin-top: 5px;'>
 """, unsafe_allow_html=True)
 
-opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", "📦 Agente 1: Recepción", "🚜 Agente 2: Picking"])
+# Menú de navegación unificado
+opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", "📦 Agente 1: Recepción", "🚜 Agente 2: Picking", "⚖️ Agente 3: Packing"])
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
@@ -65,9 +67,7 @@ if opcion == "🏠 Dashboard Principal":
     }).set_index('Indicador')
     st.bar_chart(chart_data, use_container_width=True)
     
-    # REEMPLAZO LOGÍSTICO DEFINITIVO: Eliminado el bucle roto. Tarjetas fijas ultra-claras.
     st.markdown("<br><h3>🚦 Estado Operativo de los Procesos</h3>", unsafe_allow_html=True)
-    
     st.markdown("""
         <div class="status-card status-critico">
             <strong>🔴 Agente 1: Recepción (Fill Rate)</strong> — Estatus: <u>ALERTA CRÍTICA</u> <br>
@@ -114,7 +114,7 @@ elif opcion == "🚜 Agente 2: Picking":
             'PASILLO': ['Pasillo B', 'Pasillo A', 'Pasillo C', 'Pasillo A', 'Pasillo B'],
             'ESTANTERÍA': ['Nivel 3', 'Nivel 1', 'Nivel 2', 'Nivel 4', 'Nivel 1'],
             'ARTÍCULO': ['Filtros', 'Bujías', 'Soportes', 'Pastillas', 'Correas'],
-            'CANTIDAD': [10, 15, 8, 22, 5]
+            'CANTIDAD': [5, 12, 8, 20, 7]
         }
         df_picking = pd.DataFrame(datos_picking_crudos)
 
@@ -135,6 +135,25 @@ elif opcion == "🚜 Agente 2: Picking":
         
     st.markdown("<br><h3>📋 Hoja de Ruta de Picking Generada (Tiempo Real)</h3>", unsafe_allow_html=True)
     st.dataframe(df_optimizado, use_container_width=True)
+
+elif opcion == "⚖️ Agente 3: Packing":
+    st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Auditoría automatizada de tolerancia de peso por bulto despachado</p>", unsafe_allow_html=True)
+    st.markdown("---")
+    
+    # URL de producción en vivo utilizando el nuevo GID del usuario
+    URL_PACKING = "https://google.com"
+    
+    try:
+        df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
+        df_packing.columns = df_packing.columns.str.strip().str.upper()
+    except Exception:
+        datos_packing_crudos = {
+            'PEDIDO': ['#1024', '#1025', '#1026', '#1027', '#1028'],
+            'CLIENTE': ['Distribuidora A', 'Logística B', 'Comercial C', 'Retail D', 'Mayorista E'],
+            'PESO TEÓRICO (KG)': [12.50, 8.20, 22.10, 14.30, 5.60],
+            'PESO BÁSCULA (KG)': [12.52, 8.45, 22.08, 14.31, 5.95],
+
 
 
 

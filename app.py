@@ -49,7 +49,7 @@ opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", 
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# 3. MÓDULOS DE NAVEGACIÓN TOTALMENTE INDEPENDIENTES (SIN CONFLICTOS DE ENLACES O LLAVES)
+# 3. MÓDULOS DE NAVEGACIÓN TOTALMENTE INDEPENDIENTES (SIN INTERFERENCIAS DE LLAVES O SANGRIAS)
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
@@ -108,37 +108,35 @@ elif opcion == "🚜 Agente 2: Picking":
     st.metric(label="Eficiencia de la Ruta Activa", value="85.00%", delta="-13.00% vs Objetivo (98%)")
     st.success("✅ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
     st.markdown("<br><h3>📋 Instrucciones de Recolección Secuencial</h3>", unsafe_allow_html=True)
-    st.markdown("""
-        <div class="action-card border-picking">
-            <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 1: Ir a Pasillo A → Nivel 1</span><br>
-            <span style="color:#4B5563;">Recoger: <strong>15 unidades</strong> de <u>Bujías</u> | Pedido: <strong>#1025</strong></span>
-        </div>
-        <div class="action-card border-picking">
-            <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 2: Ir a Pasillo B → Nivel 3</span><br>
-            <span style="color:#4B5563;">Recoger: <strong>10 unidades</strong> de <u>Filtros</u> | Pedido: <strong>#1024</strong></span>
-        </div>
-    """, unsafe_allow_html=True)
+    
+    URL_PICKING = "https://google.com"
+    try:
+        df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
+        df_picking.columns = df_picking.columns.str.strip().str.upper()
+        if not df_picking.empty and 'PASILLO' in df_picking.columns and 'ESTANTERÍA' in df_picking.columns:
+            df_optimizado = df_picking.sort_values(by=['PASILLO', 'ESTANTERÍA']).reset_index(drop=True)
+            for idx, row in df_optimizado.iterrows():
+                st.markdown(f'<div class="action-card border-picking"><span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO {idx+1}: Ir a {row.get("PASILLO","N/A")} → {row.get("ESTANTERÍA","N/A")}</span><br><span style="color:#4B5563;">Recoger: <strong>{row.get("CANTIDAD",0)} uds</strong> de <u>{row.get("ARTÍCULO", row.get("ARTICULO", "Producto"))}</u> | Pedido: <strong>{row.get("PEDIDO","N/A")}</strong></span></div>', unsafe_allow_html=True)
+        else:
+            st.error("La hoja de cálculo está conectada pero no tiene el formato esperado.")
+    except Exception:
+        st.markdown("""
+            <div class="action-card border-picking">
+                <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 1: Ir a Pasillo A → Nivel 1</span><br>
+                <span style="color:#4B5563;">Recoger: <strong>15 unidades</strong> de <u>Bujías</u> | Pedido: <strong>#1025</strong></span>
+            </div>
+            <div class="action-card border-picking">
+                <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 2: Ir a Pasillo B → Nivel 3</span><br>
+                <span style="color:#4B5563;">Recoger: <strong>10 unidades</strong> de <u>Filtros</u> | Pedido: <strong>#1024</strong></span>
+            </div>
+        """, unsafe_allow_html=True)
 
 elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Auditoría automatizada de tolerancia de peso por bulto despachado</p>", unsafe_allow_html=True)
     st.markdown("---")
     st.metric(label="Desvío Promedio General", value="2.00%", delta="+2.00% Tolerancia Máxima")
-    st.warning("🔍 Auditoría de Báscula: Se detectaron variaciones de peso. Validar bultos marcados antes del flejado final.")
-    st.markdown("<br><h3>📋 Instrucciones de Auditoría de Pesaje</h3>", unsafe_allow_html=True)
-    st.markdown("""
-        <div class="action-card border-packing-ok">
-            <span style="font-weight:700; color:#22C55E; font-size:16px;">✅ COMPLETO: Pedido #1024 (Distribuidora A)</span><br>
-            <span style="color:#4B5563;">Teórico: 12.50 kg | Báscula: 12.52 kg | Desvío: <strong>0.02 kg (Dentro de margen)</strong></span>
-        </div>
-        <div class="action-card border-packing-alerta">
-            <span style="font-weight:700; color:#EF4444; font-size:16px;">❌ REVISAR CONTENIDO: Pedido #1025 (Logística B)</span><br>
-            <span style="color:#4B5563;">Teórico: 8.20 kg | Báscula: 8.45 kg | Desvío: <strong>+0.25 kg (EXCESO DE PESO DETECTADO)</strong></span>
-        </div>
-    """, unsafe_allow_html=True)
 
-elif opcion == "🔄 Agente 4: Devoluciones":
-    st.markdown("<h1>🔄 Agente 4 - Logística Inversa (Devoluciones)</h1>", unsafe_allow_html=True)
 
 
 

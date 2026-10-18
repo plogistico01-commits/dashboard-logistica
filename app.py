@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import requests
 
 # 1. CONFIGURACIÓN DE INTERFAZ PREMIUM LOGÍSTICA
 st.set_page_config(page_title="Proyecto Logístico - Dashboard", layout="wide", initial_sidebar_state="expanded")
@@ -23,46 +22,6 @@ st.markdown("""
         .status-controlado { background-color: #F0F9FF; border-color: #0EA5E9; color: #075985; }
     </style>
 """, unsafe_allow_html=True)
-
-# =====================================================================
-# INFRAESTRUCTURA CONSOLIDADA DE CONEXIONES EXTERNAS
-# =====================================================================
-WEBHOOKS_DISCORD = {
-    "recepcion": "https://discord.com",
-    "picking": "https://discord.com",
-    "packing": "https://discord.com",
-    "devoluciones": "https://discord.com",
-    "ruteo": "https://discord.com",
-    "dashboard": "https://discord.com"
-}
-
-GIDS = {
-    "picking": "537805708",
-    "packing": "822850707",
-    "devoluciones": "1865557384",
-    "ruteo": "773965386",
-    "dashboard": "1440866900"
-}
-
-def enviar_mensaje_discord(area, mensaje):
-    url = WEBHOOKS_DISCORD.get(area)
-    if url:
-        try:
-            requests.post(url, json={"content": mensaje}, timeout=5)
-        except Exception:
-            pass
-
-def descargar_pestana_sheets(nombre_pestana):
-    gid = GIDS.get(nombre_pestana)
-    url_csv = f"https://google.com{gid}"
-    try:
-        df = pd.read_csv(url_csv, encoding='utf-8')
-        df.columns = df.columns.str.strip().str.upper()
-        return df
-    except Exception:
-        # Retorna un DataFrame vacío seguro si la sincronización web tarda en responder
-        return pd.DataFrame()
-# =====================================================================
 
 # 2. SIDEBAR FIJA CORPORATIVA
 st.sidebar.markdown("""
@@ -124,11 +83,6 @@ if opcion == "🏠 Dashboard Principal":
         </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("📢 Emitir Alerta de Dashboard General"):
-        enviar_mensaje_discord("dashboard", "📊 **REPORTE GENERAL DE DASHBOARD:** Sincronización corporativa completada. Verifique estados de alerta crítica en el panel ejecutivo web.")
-        st.toast("Reporte general enviado a Discord.", icon="📊")
-
 elif opcion == "📦 Agente 1: Recepción":
     st.markdown("<h1>📦 Agente 1 - Recepción (Fill Rate)</h1>", unsafe_allow_html=True)
     st.markdown("---")
@@ -136,28 +90,46 @@ elif opcion == "📦 Agente 1: Recepción":
     st.markdown("<br>", unsafe_allow_html=True)
     st.progress(0.33)
     st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drásticamente por debajo del objetivo del 95.00%.")
-    
-    if st.button("📢 Reportar Alerta Crítica a Discord"):
-        enviar_mensaje_discord("recepcion", "🚨 **ALERTA CRÍTICA EN RECEPCIÓN:** El Fill Rate actual se desplomó al **33.33%**. Se requiere revisión de stock de inmediato.")
-        st.toast("Reporte enviado al canal de Recepción.", icon="📥")
 
 elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<h1>🚜 Agente 2 - Optimización de Rutas (Picking)</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Filtro de pedidos pendientes clasificados automáticamente por ubicación física</p>", unsafe_allow_html=True)
     st.markdown("---")
-    
-    df_picking = descargar_pestana_sheets("picking")
-    
-    if not df_picking.empty:
-        if 'ESTADO' in df_picking.columns:
-            df_pendientes = df_picking[df_picking['ESTADO'].astype(str).str.upper() == 'PENDIENTE'].copy()
-        else:
-            df_pendientes = df_picking.copy()
-            
-        if 'PASILLO' in df_pendientes.columns and 'NIVEL' in df_pendientes.columns:
-            df_ruta = df_pendientes.sort_values(by=['PASILLO', 'NIVEL']).reset_index(drop=True)
-        else:
-            df_ruta = df_pendientes.reset_index(drop=True)
+    st.metric(label="Eficiencia de la Ruta Activa", value="85.00%", delta="-13.00% vs Objetivo (98%)")
+    st.success("¼ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
+    st.markdown("<br><h3>📋 Instrucciones de Recolección Secuencial</h3>", unsafe_allow_html=True)
+    st.info("📍 PASO 1: Ir a Pasillo A → Nivel 1 | Recoger: 15 unidades de Bujías (Pedido #1025)")
+    st.info("📍 PASO 2: Ir a Pasillo B → Nivel 3 | Recoger: 10 unidades de Filtros (Pedido #1024)")
+
+elif opcion == "⚖️ Agente 3: Packing":
+    st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Auditoría automatizada de tolerancia de peso por bulto despachado</p>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.metric(label="Desvío Promedio General", value="2.00%", delta="+2.00% Tolerancia Máxima")
+    st.warning("🔍 Auditoría de Báscula: Se detectaron variaciones de peso. Validar bultos marcados antes del flejado final.")
+    st.markdown("<br><h3>📋 Instrucciones de Auditoría de Pesaje</h3>", unsafe_allow_html=True)
+    st.success("✅ COMPLETO: Pedido #1024 (Distribuidora A) | Desvío: 0.02 kg (Dentro de margen)")
+    st.error("❌ REVISAR CONTENIDO: Pedido #1025 (Logística B) | Desvío: +0.25 kg (EXCESO DETECTADO)")
+
+elif opcion == "🔄 Agente 4: Devoluciones":
+    st.markdown("<h1>🔄 Agente 4 - Logística Inversa (Devoluciones)</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Clasificación automática de mercancía retornada y motivos de rechazo</p>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.metric(label="Eficiencia de Logística Inversa", value="91.00%", delta="-4.00% vs Objetivo (95%)")
+    st.warning("🔄 Auditoría de Retornos: Revisar las prioridades de reingreso a stock para evitar obsolescencia de componentes.")
+    st.markdown("<br><h3>📋 Plan de Clasificación e Ingreso a Stock</h3>", unsafe_allow_html=True)
+    st.warning("⚠️ RETORNO EN REVISIÓN: Pedido #1011 (Comercializadora X) | Motivo: Error de despacho | Acción: Inspección visual obligatoria")
+    st.success("✅ REINGRESO AUTORIZADO: Pedido #1009 (Taller Central) | Motivo: Garantía de fábrica | Acción: Actualizar stock de inmediato")
+
+elif opcion == "🇲ic Agente 5: Ruteo" or opcion == "🚛 Agente 5: Ruteo":
+    st.markdown("<h1>🚛 Agente 5 - Optimización de Ruteo (OTIF)</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Despacho inteligente basado en las secuencias óptimas de entrega en carretera</p>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.metric(label="Nivel de Cumplimiento OTIF Actual", value="94.20%", delta="-3.80% vs Target (98%)")
+    st.info("🚛 Monitoreo de Consolidados: Rutas generadas por la IA. Validar secuencias asignadas para evitar ventanas demoradas.")
+    st.markdown("<br><h3>📋 Plan de Carga Secuencial por Ruta de Distribución</h3>", unsafe_allow_html=True)
+    st.info("🚚 RUTA 1 (Zona Norte) — Transporte: Unidad Camión 04 | Pedido: #1040 — Estado: COMPLETO EN ESPERA DE SALIDA")
+
             
 
 

@@ -28,6 +28,8 @@ st.markdown("""
         .border-picking { border-color: #1E3A8A; }
         .border-packing-ok { border-color: #22C55E; }
         .border-packing-alerta { border-color: #EF4444; }
+        .border-devoluciones { border-color: #F97316; }
+        .border-despacho { border-color: #0EA5E9; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -43,11 +45,11 @@ st.sidebar.markdown("""
     <hr style='border-color: rgba(255,255,255,0.15); margin-top: 5px;'>
 """, unsafe_allow_html=True)
 
-opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", "📦 Agente 1: Recepción", "🚜 Agente 2: Picking", "⚖️ Agente 3: Packing"])
+opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", "📦 Agente 1: Recepción", "🚜 Agente 2: Picking", "⚖️ Agente 3: Packing", "🔄 Agente 4: Devoluciones", "🚛 Agente 5: Despacho (OTIF)"])
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# 3. MÓDULOS DE NAVEGACIÓN TOTALMENTE INDEPENDIENTES (SIN TRY / EXCEPT CRUZADOS)
+# 3. MÓDULOS DE NAVEGACIÓN TOTALMENTE INDEPENDIENTES (SIN CONFLICTOS DE ENLACES O LLAVES)
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
@@ -57,13 +59,13 @@ if opcion == "🏠 Dashboard Principal":
     with col1: st.metric(label="📥 Agente 1 (Fill Rate)", value="33.33%", delta="-61.67% vs Meta")
     with col2: st.metric(label="🚜 Agente 2 (Picking)", value="85.00%", delta="-13.00% vs Meta")
     with col3: st.metric(label="⚖️ Agente 3 (Packing)", value="2.00%", delta="+2.00% Desvío")
-    with col4: st.metric(label="🔄 Agente 4 (Devoluciones)", value="91.00%", delta="-4.00% vs Meta")
+    with col4: st.metric(label="🚛 Agente 5 (OTIF Despacho)", value="94.20%", delta="-3.80% vs Meta")
         
     st.markdown("<br><h3>📊 Rendimiento vs Metas del Proyecto</h3>", unsafe_allow_html=True)
     chart_data = pd.DataFrame({
-        'Indicador': ['Fill Rate', 'Picking', 'Packing', 'Devoluciones'],
-        'Progreso Real': [33.33, 85.00, 2.00, 91.00],
-        'Meta Objetivo': [95.00, 98.00, 0.00, 95.00]
+        'Indicador': ['Fill Rate', 'Picking', 'Packing', 'OTIF Despacho'],
+        'Progreso Real': [33.33, 85.00, 2.00, 94.20],
+        'Meta Objetivo': [95.00, 98.00, 0.00, 98.00]
     }).set_index('Indicador')
     st.bar_chart(chart_data, use_container_width=True)
     
@@ -85,6 +87,10 @@ if opcion == "🏠 Dashboard Principal":
             <strong>🟠 Agente 4: Logística Inversa Devoluciones</strong> — Estatus: <u>REVISIÓN</u> <br>
             <span style="font-size: 13px; opacity: 0.8;">Eficiencia Actual: 91.00% | Meta del Negocio: 95.00%</span>
         </div>
+        <div class="status-card status-optimo">
+            <strong>🟢 Agente 5: Control de Despacho (OTIF)</strong> — Estatus: <u>ÓPTIMO OBJETIVO</u> <br>
+            <span style="font-size: 13px; opacity: 0.8;">Nivel de Servicio Despacho: 94.20% | Meta del Negocio: 98.00%</span>
+        </div>
     """, unsafe_allow_html=True)
 
 elif opcion == "📦 Agente 1: Recepción":
@@ -99,12 +105,9 @@ elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<h1>🚜 Agente 2 - Optimización de Rutas (Picking)</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Filtro de pedidos pendientes clasificados automáticamente por ubicación física</p>", unsafe_allow_html=True)
     st.markdown("---")
-    
     st.metric(label="Eficiencia de la Ruta Activa", value="85.00%", delta="-13.00% vs Objetivo (98%)")
-    st.success("¼ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
+    st.success("✅ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
     st.markdown("<br><h3>📋 Instrucciones de Recolección Secuencial</h3>", unsafe_allow_html=True)
-    
-    # Renderizado directo mediante componentes de interfaz fijos sin riesgo de quiebre en red
     st.markdown("""
         <div class="action-card border-picking">
             <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 1: Ir a Pasillo A → Nivel 1</span><br>
@@ -120,12 +123,9 @@ elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Auditoría automatizada de tolerancia de peso por bulto despachado</p>", unsafe_allow_html=True)
     st.markdown("---")
-    
     st.metric(label="Desvío Promedio General", value="2.00%", delta="+2.00% Tolerancia Máxima")
     st.warning("🔍 Auditoría de Báscula: Se detectaron variaciones de peso. Validar bultos marcados antes del flejado final.")
     st.markdown("<br><h3>📋 Instrucciones de Auditoría de Pesaje</h3>", unsafe_allow_html=True)
-    
-    # Renderizado directo mediante componentes de interfaz fijos sin riesgo de quiebre en red
     st.markdown("""
         <div class="action-card border-packing-ok">
             <span style="font-weight:700; color:#22C55E; font-size:16px;">✅ COMPLETO: Pedido #1024 (Distribuidora A)</span><br>
@@ -136,6 +136,10 @@ elif opcion == "⚖️ Agente 3: Packing":
             <span style="color:#4B5563;">Teórico: 8.20 kg | Báscula: 8.45 kg | Desvío: <strong>+0.25 kg (EXCESO DE PESO DETECTADO)</strong></span>
         </div>
     """, unsafe_allow_html=True)
+
+elif opcion == "🔄 Agente 4: Devoluciones":
+    st.markdown("<h1>🔄 Agente 4 - Logística Inversa (Devoluciones)</h1>", unsafe_allow_html=True)
+
 
 
 

@@ -25,7 +25,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 2. CONSTANTES DE INTEGRACIÓN (GOOGLE SHEETS Y DISCORD)
-# Reemplazar con el ID real de tu documento o configurar en st.secrets
 SHEET_ID = "1NzD6v6A5FvR5XvKz3B6C9p_WdfV_0F-fO0W8EpxM2E0" 
 BASE_URL = f"https://google.com{SHEET_ID}/export?format=csv"
 
@@ -67,7 +66,7 @@ def extraer_datos_sheet(gid_key, columnas_esperadas, datos_contingencia):
     except Exception:
         return pd.DataFrame(datos_contingencia)
 
-# 4. PLANTILLAS DE CONTINGENCIA (REGLA 4: RESPALDO ANTE CAÍDAS DE RED)
+# 4. PLANTILLAS DE CONTINGENCIA CORREGIDAS (REGLA 4)
 fallback_dash = {"Indicador": ["Fill Rate", "Picking", "Packing", "OTIF Ruteo"], "Progreso": [33.33, 85.00, 2.00, 94.20], "Meta": [95.00, 98.00, 0.00, 95.00]}
 fallback_a2 = {"ID_Ruta": ["R-101", "R-102"], "Operario": ["Juan P.", "Ana M."], "Eficiencia": [85.0, 99.1], "Estado": ["REVISIÓN", "ÓPTIMO"]}
 fallback_a3 = {"Lote": ["L-998", "L-999"], "Desvio_Peso": [2.5, 0.1], "Estado": ["CRÍTICO", "CONTROLADO"]}
@@ -153,6 +152,9 @@ elif opcion == "⚖️ Agente 3: Packing":
 
 elif opcion == "🔄 Agente 4: Devoluciones":
     st.markdown("<h1>🔄 Agente 4 - Logística Inversa (Devoluciones)</h1>", unsafe_allow_html=True)
+    df_a4 = extraer_datos_sheet("agente4", ["Sku", "Motivo", "Cantidad"], fallback_a4)
+    
+
 
 
 

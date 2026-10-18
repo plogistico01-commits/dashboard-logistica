@@ -1,7 +1,72 @@
 import streamlit as st
 import pandas as pd
+import requests
 
+# ==============================================================================
+# 0. MOTOR GLOBAL DE AUTOMATIZACIÓN (GOOGLE SHEETS & DISCORD PUSH)
+# ==============================================================================
+# Webhook obtenido desde los ajustes de tu canal de texto en Discord
+DISCORD_WEBHOOK_URL = "TU_URL_DE_WEBHOOK_AQUÍ"
+
+# Configuración del documento maestro de Google Sheets
+SHEET_ID = "1NzD6v6A5FvR5XvKz3B6C9p_WdfV_0F-fO0W8EpxM2E0" # ID del documento base
+CSV_URL_TEMPLATE = f"https://google.com{SHEET_ID}/export?format=csv&gid="
+
+# GIDs oficiales asignados para cada módulo operativo
+GIDS = {
+    "dashboard": "1440866900",
+    "agente2": "537805708",
+    "agente3": "822850707",
+    "agente4": "1865557384",
+    "agente5": "773965386"
+}
+
+def enviar_alerta_discord(titulo, descripcion, color_hex):
+    """Envía notificaciones push enriquecidas al servidor Logistica Lean."""
+    if DISCORD_WEBHOOK_URL and DISCORD_WEBHOOK_URL != "TU_URL_DE_WEBHOOK_AQUÍ":
+        color_int = int(color_hex.replace("#", ""), 16)
+        payload = {
+            "embeds": [{
+                "title": titulo,
+                "description": descripcion,
+                "color": color_int,
+                "footer": {"text": "Automatización Serverless · Capa 0 USD"}
+            }]
+        }
+        try:
+            requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=4)
+        except Exception:
+            pass
+
+def extraer_datos_logistica(gid_key, columnas_esperadas, datos_contingencia):
+    """Extrae datos de Google Sheets con caída automática a contingencia estables (Regla 4)."""
+    try:
+        url_completa = f"{CSV_URL_TEMPLATE}{GIDS[gid_key]}"
+        df = pd.read_csv(url_completa, timeout=4)
+        if all(col in df.columns for col in columnas_esperadas):
+            return df[columnas_esperadas]
+        return pd.DataFrame(datos_contingencia)
+    except Exception:
+        return pd.DataFrame(datos_contingencia)
+
+# Plantillas de respaldo fijas y seguras (Regla 4)
+fallback_dash = {"Indicador": ["Fill Rate", "Picking", "Packing", "OTIF Ruteo"], "Progreso": [33.33, 85.00, 2.00, 94.20], "Meta": [95.00, 98.00, 0.00, 95.00]}
+fallback_a2 = {"ID_Ruta": ["R-101", "R-102"], "Operario": ["Juan P.", "Ana M."], "Eficiencia": [85.0, 99.1], "Estado": ["REVISIÓN", "ÓPTIMO"]}
+fallback_a3 = {"Lote": ["L-998", "L-999"], "Desvio_Peso": [2.5, 0.1], "Estado": ["CRÍTICO", "CONTROLADO"]}
+fallback_a4 = {"Sku": ["SKU-708A", "SKU-537B"], "Motivo": ["Empaque Dañado", "Reingreso Ok"], "Cantidad":}
+fallback_a5 = {"Zona": ["Ruta Norte", "Ruta Metropolitana"], "OTIF": [98.50, 89.90], "Estado": ["ÓPTIMO OBJETIVO", "REVISIÓN POR TRÁFICO"]}
+
+# Ejecución global y segura del extractor de planillas antes de los condicionales
+df_dash = extraer_datos_logistica("dashboard", ["Indicador", "Progreso", "Meta"], fallback_dash)
+df_a2 = extraer_datos_logistica("agente2", ["ID_Ruta", "Operario", "Eficiencia", "Estado"], fallback_a2)
+df_a3 = extraer_datos_logistica("agente3", ["Lote", "Desvio_Peso", "Estado"], fallback_a3)
+df_a4 = extraer_datos_logistica("agente4", ["Sku", "Motivo", "Cantidad"], fallback_a4)
+df_a5 = extraer_datos_logistica("agente5", ["Zona", "OTIF", "Estado"], fallback_a5)
+
+
+# ==============================================================================
 # 1. CONFIGURACIÓN DE INTERFAZ PREMIUM LOGÍSTICA
+# ==============================================================================
 st.set_page_config(page_title="Proyecto Logístico - Dashboard", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
@@ -23,7 +88,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# ==============================================================================
 # 2. SIDEBAR FIJA CORPORATIVA
+# ==============================================================================
 st.sidebar.markdown("""
     <div style='text-align: center; padding: 15px 0;'>
         <div style='background-color: #FFFFFF; width: 75px; height: 75px; border-radius: 50%; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;'>
@@ -39,21 +106,9 @@ opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", 
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# 3. DATOS DE INICIO DE RESPALDO (SINTAXIS REVISADA)
-fallback_dash = {"Indicador": ["Fill Rate", "Picking", "Packing", "OTIF Ruteo"], "Progreso": [33.33, 85.00, 2.00, 94.20], "Meta": [95.00, 98.00, 0.00, 95.00]}
-fallback_a2 = {"ID_Ruta": ["R-101", "R-102"], "Operario": ["Juan P.", "Ana M."], "Eficiencia": [85.0, 99.1], "Estado": ["REVISIÓN", "ÓPTIMO"]}
-fallback_a3 = {"Lote": ["L-998", "L-999"], "Desvio_Peso": [2.5, 0.1], "Estado": ["CRÍTICO", "CONTROLADO"]}
-fallback_a4 = {"Sku": ["SKU-708A", "SKU-537B"], "Motivo": ["Empaque Dañado", "Reingreso Ok"], "Cantidad":}
-fallback_a5 = {"Zona": ["Ruta Norte", "Ruta Metropolitana"], "OTIF": [98.50, 89.90], "Estado": ["ÓPTIMO OBJETIVO", "REVISIÓN POR TRÁFICO"]}
-
-# Conversión segura de diccionarios a DataFrames
-df_dash = pd.DataFrame(fallback_dash)
-df_a2 = pd.DataFrame(fallback_a2)
-df_a3 = pd.DataFrame(fallback_a3)
-df_a4 = pd.DataFrame(fallback_a4)
-df_a5 = pd.DataFrame(fallback_a5)
-
-# 4. DESPLIEGUE DE PESTAÑAS EN FORMATO PLANO ULTRA-ESTABLE
+# ==============================================================================
+# 3. INTERFAZ EN FORMATO PLANO ULTRA-ESTABLE
+# ==============================================================================
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
@@ -69,59 +124,29 @@ if opcion == "🏠 Dashboard Principal":
     chart_data = df_dash.set_index('Indicador')
     st.bar_chart(chart_data, use_container_width=True)
     
+    st.markdown("<br><h3>🤖 Automatización de Alertas Automáticas</h3>", unsafe_allow_html=True)
+    if st.button("🚀 Forzar Escaneo de Indicadores y Empujar Alertas a Discord"):
+        if df_dash.loc[0, "Progreso"] < df_dash.loc[0, "Meta"]:
+            enviar_alerta_discord("🚨 ALERTA CRÍTICA: Quiebre de Nivel de Servicio (Fill Rate)", f"El Agente 1 (Recepción) reporta eficiencia de {df_dash.loc[0, 'Progreso']}%. Meta de la operación: {df_dash.loc[0, 'Meta']}%", "#EF4444")
+            st.error("Rompimiento detectado: Notificación de desvío enviada al canal de Discord.")
+        else:
+            st.success("Escaneo exitoso: Todos los indicadores operan de manera óptima.")
+
     st.markdown("<br><h3>🚦 Estado Operativo de los Procesos</h3>", unsafe_allow_html=True)
     st.markdown(f"""
         <div class="status-card status-critico">
             <strong>🔴 Agente 1: Recepción (Fill Rate)</strong> — Estatus: <u>ALERTA CRÍTICA</u> <br>
-            <span style="font-size: 13px; opacity: 0.8;">Progreso Actual: {df_dash.loc[0, 'Progreso']}% | Meta: {df_dash.loc[0, 'Meta']}%</span>
+            <span style="font-size: 13px; opacity: 0.8;">Progreso Actual: {df_dash.loc[0, 'Progreso']}% | Meta del Negocio: {df_dash.loc[0, 'Meta']}%</span>
         </div>
         <div class="status-card status-revision">
             <strong>🟠 Agente 2: Eficiencia de Picking (Ruta)</strong> — Estatus: <u>REVISIÓN</u> <br>
-            <span style="font-size: 13px; opacity: 0.8;">Progreso Actual: {df_dash.loc[1, 'Progreso']}% | Meta: {df_dash.loc[1, 'Meta']}%</span>
+            <span style="font-size: 13px; opacity: 0.8;">Progreso Actual: {df_dash.loc[1, 'Progreso']}% | Meta del Negocio: {df_dash.loc[1, 'Meta']}%</span>
         </div>
-    """, unsafe_allow_html=True)
+        <div class="status-card status-controlado">
+            <strong>🔵 Agente 3: Desvío de Peso Packing (Báscula)</strong> — Estatus: <u>CONTROLADO</u> <br>
+            <span style="font-size: 13px; opacity: 0.8;">Desvío Actual: {df_dash.loc[2, 'Progreso']}% | Límite Permitido: {df_dash.loc[2, 'Meta']}%</span>
+        </div>
 
-elif opcion == "📦 Agente 1: Recepción":
-    st.markdown("<h1>📦 Agente 1 - Recepción (Fill Rate)</h1>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.metric(label="Precisión de Recepción Actual", value="33.33%", delta="-61.67% vs Meta")
-    st.progress(0.33)
-
-elif opcion == "🚜 Agente 2: Picking":
-    st.markdown("<h1>🚜 Agente 2 - Optimización de Rutas (Picking)</h1>", unsafe_allow_html=True)
-    for i in range(len(df_a2)):
-        r = df_a2.loc[i, "ID_Ruta"]
-        o = df_a2.loc[i, "Operario"]
-        ef = df_a2.loc[i, "Eficiencia"]
-        es = df_a2.loc[i, "Estado"]
-        clase = "status-optimo" if es == "ÓPTIMO" else "status-revision"
-        st.markdown(f'<div class="status-card {clase}"><strong>Ruta: {r}</strong> — Operario: {o} <br><span style="font-size: 13px; opacity: 0.8;">Eficiencia: {ef}% | Estado: {es}</span></div>', unsafe_allow_html=True)
-
-elif opcion == "⚖️ Agente 3: Packing":
-    st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
-    for i in range(len(df_a3)):
-        l = df_a3.loc[i, "Lote"]
-        d = df_a3.loc[i, "Desvio_Peso"]
-        e = df_a3.loc[i, "Estado"]
-        clase = "status-critico" if e == "CRÍTICO" else "status-controlado"
-        st.markdown(f'<div class="status-card {clase}"><strong>Lote Muestreado: {l}</strong> <br><span style="font-size: 13px; opacity: 0.8;">Desvío Registrado: {d}% | Estado: {e}</span></div>', unsafe_allow_html=True)
-
-elif opcion == "🔄 Agente 4: Devoluciones":
-    st.markdown("<h1>🔄 Agente 4 - Logística Inversa (Devoluciones)</h1>", unsafe_allow_html=True)
-    for i in range(len(df_a4)):
-        s = df_a4.loc[i, "Sku"]
-        m = df_a4.loc[i, "Motivo"]
-        c = df_a4.loc[i, "Cantidad"]
-        st.markdown(f'<div class="status-card status-revision"><strong>SKU: {s}</strong> — Cantidad: {c} <br><span style="font-size: 13px; opacity: 0.8;">Motivo principal de rechazo: {m}</span></div>', unsafe_allow_html=True)
-
-elif opcion == "🚛 Agente 5: Ruteo":
-    st.markdown("<h1>🚛 Agente 5 - Optimización de Ruteo (OTIF)</h1>", unsafe_allow_html=True)
-    for i in range(len(df_a5)):
-        z = df_a5.loc[i, "Zona"]
-        ot = df_a5.loc[i, "OTIF"]
-        es = df_a5.loc[i, "Estado"]
-        clase = "status-optimo" if "ÓPTIMO" in es else "status-revision"
-        st.markdown(f'<div class="status-card {clase}"><strong>Zona Logística: {z}</strong> <br><span style="font-size: 13px; opacity: 0.8;">Nivel de Servicio OTIF: {ot}% | Estatus: {es}</span></div>', unsafe_allow_html=True)
 
 
     

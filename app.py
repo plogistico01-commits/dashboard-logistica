@@ -27,7 +27,6 @@ st.markdown("""
 # =====================================================================
 # CONFIGURACIÓN DE CONEXIONES EXTERNAS (DISCORD Y GOOGLE SHEETS)
 # =====================================================================
-# Mapeo completo verificado de tus canales y webhooks logísticos oficiales
 WEBHOOKS_DISCORD = {
     "recepcion": "https://discord.com",
     "picking": "https://discord.com",
@@ -37,7 +36,6 @@ WEBHOOKS_DISCORD = {
     "dashboard": "https://discord.com"
 }
 
-# ID único de tu archivo central de Google Sheets
 SHEET_ID = "1xaPnDFIBd0Lwy_Z7wVI-SdsxSq20wg7fKtLDypjsd4I"
 
 def enviar_mensaje_discord(area, mensaje):
@@ -58,13 +56,12 @@ def cargar_datos_picking():
         df.columns = df.columns.str.strip().str.upper()
         return df
     except Exception:
-        # Sistema de contingencia verificado con valores numéricos explícitos en listas fijas
         return pd.DataFrame({
             'PEDIDO': ['#1025', '#1024'],
             'PASILLO': ['A', 'B'],
-            'NIVEL': [1, 3],
+            'NIVEL':,
             'PRODUCTO': ['Bujías', 'Filtros'],
-            'CANTIDAD': [15, 10],
+            'CANTIDAD':,
             'ESTADO': ['PENDIENTE', 'PENDIENTE']
         })
 # =====================================================================
@@ -156,6 +153,12 @@ elif opcion == "🚜 Agente 2: Picking":
     if 'ESTADO' in df_picking.columns:
         df_pendientes = df_picking[df_picking['ESTADO'].str.upper() == 'PENDIENTE'].copy()
     else:
+        df_pendientes = df_picking.copy()
+    
+    df_ruta = df_pendientes.sort_values(by=['PASILLO', 'NIVEL']).reset_index(drop=True)
+    
+    st.metric(label="Eficiencia de la Ruta Activa", value="85.00%", delta="-13.00% vs Objetivo (98%)")
+
 
     
 

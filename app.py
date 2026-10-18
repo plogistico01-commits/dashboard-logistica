@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
+import requests
 
+# ==============================================================================
 # 1. CONFIGURACIÓN DE INTERFAZ PREMIUM LOGÍSTICA
+# ==============================================================================
 st.set_page_config(page_title="Proyecto Logístico - Dashboard", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
@@ -20,10 +23,117 @@ st.markdown("""
         .status-revision { background-color: #FFF7ED; border-color: #F97316; color: #9A3412; }
         .status-optimo { background-color: #F0FDF4; border-color: #22C55E; color: #166534; }
         .status-controlado { background-color: #F0F9FF; border-color: #0EA5E9; color: #075985; }
+        
+        /* Contenedores Premium para Tablas de Datos Sincronizados */
+        .premium-table-container { background-color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-top: 15px; }
+        .premium-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #F3F4F6; font-family: 'Inter', sans-serif; }
+        .premium-row:last-child { border-bottom: none; }
+        .premium-id { font-weight: 700; color: #1E3A8A; background: #E0E7FF; padding: 4px 8px; border-radius: 6px; font-size: 12px; }
+        .premium-text { color: #374151; font-weight: 500; font-size: 14px; flex-grow: 1; margin-left: 15px; }
+        .premium-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
     </style>
 """, unsafe_allow_html=True)
 
-# 2. SIDEBAR FIJA CORPORATIVA
+# ==============================================================================
+# 2. CONFIGURACIÓN DE FUENTES DE DATOS Y ENLACES (GOOGLE SHEETS & DISCORD)
+# ==============================================================================
+# Endpoint oficial para descargas CSV directas desde la publicación web de Sheets
+SHEET_BASE_URL = "https://google.com"
+
+# Diccionario unificado de GIDs correspondientes a cada área logística de tus hojas
+GIDS = {
+    "Dashboard": "1440866900",
+    "Recepcion": "1440866900",
+    "Picking": "537805708",
+    "Packing": "822850707",
+    "Devoluciones": "1865557384",
+    "Ruteo": "773965386"
+}
+
+# Canales de Webhooks de Discord correspondientes a cada flujo de la operación
+DISCORD_WEBHOOKS = {
+    "dashboard": "https://discord.com",
+    "recepcion": "https://discord.com",
+    "picking": "https://discord.com",
+    "packing": "https://discord.com",
+    "devoluciones": "https://discord.com",
+    "ruteo": "https://discord.com"
+}
+
+# ==============================================================================
+# 3. FUNCIONES DE AUTOMATIZACIÓN (CONECTORES DE DATOS Y ALERTAS)
+# ==============================================================================
+@st.cache_data(ttl=60)
+def cargar_datos_sheet(gid_name):
+    """Extrae dinámicamente datos desde una pestaña específica de Google Sheets vía GID."""
+    try:
+        url = f"{SHEET_BASE_URL}&gid={GIDS[gid_name]}"
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.sidebar.error(f"⚠️ Error conectando con pestaña {gid_name}: {e}")
+        return pd.DataFrame()
+
+def enviar_alerta_discord(area, titulo, descripcion, color_hex, campos=None):
+    """Despacha notificaciones enriquecidas (Embeds) hacia el canal de Discord del área asignada."""
+    webhook_url = DISCORD_WEBHOOKS.get(area.lower())
+    if not webhook_url:
+        return False
+    
+    color_decimal = int(color_hex.replace("#", ""), 16)
+    
+    embed = {
+        "title": titulo,
+        "description": descripcion,
+        "color": color_decimal,
+        "footer": {"text": "Sistema Automatizado Logístico · Alerta en Tiempo Real"}
+    }
+    
+    if campos:
+        embed["fields"] = [{"name": k, "value": str(v), "inline": True} for k, v in campos.items()]
+        
+    payload = {"embeds": [embed]}
+    
+    try:
+        response = requests.post(webhook_url, json=payload)
+        return response.status_code == 204
+    except Exception:
+        return False
+
+def renderizar_tabla_premium(df, columna_id, columna_texto, columna_status):
+    """Transforma un DataFrame crudo en una lista visual elegante y fácil de leer."""
+    if df.empty:
+        st.warning("No hay registros disponibles en esta sección.")
+        return
+        
+    st.markdown('<div class="premium-table-container">', unsafe_allow_html=True)
+    for _, row in df.iterrows():
+        if columna_id in row and columna_texto in row and columna_status in row:
+            status_val = str(row[columna_status]).strip().upper()
+            
+            if status_val in ["CRÍTICO", "ALERTA", "FALLO", "REVISAR CONTENIDO", "X"]:
+                bg_badge, txt_badge = "#FEF2F2", "#991B1B"
+            elif status_val in ["REVISIÓN", "PENDIENTE", "PROCESO"]:
+                bg_badge, txt_badge = "#FFF7ED", "#9A3412"
+            elif status_val in ["ÓPTIMO", "COMPLETO", "EXITOSO", "A"]:
+                bg_badge, txt_badge = "#F0FDF4", "#166534"
+            else:
+                bg_badge, txt_badge = "#F0F9FF", "#075985"
+                
+            st.markdown(f"""
+                <div class="premium-row">
+                    <div class="premium-id">#{row[columna_id]}</div>
+                    <div class="premium-text">{row[columna_texto]}</div>
+                    <div class="premium-badge" style="background-color: {bg_badge}; color: {txt_badge};">
+                        {row[columna_status]}
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ==============================================================================
+# 4. SIDEBAR FIJA CORPORATIVA
+# ==============================================================================
 st.sidebar.markdown("""
     <div style='text-align: center; padding: 15px 0;'>
         <div style='background-color: #FFFFFF; width: 75px; height: 75px; border-radius: 50%; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;'>
@@ -35,100 +145,37 @@ st.sidebar.markdown("""
     <hr style='border-color: rgba(255,255,255,0.15); margin-top: 5px;'>
 """, unsafe_allow_html=True)
 
-opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", "📦 Agente 1: Recepción", "🚜 Agente 2: Picking", "⚖️ Agente 3: Packing", "🔄 Agente 4: Devoluciones", "🚛 Agente 5: Ruteo"])
+opcion = st.sidebar.radio("Menú de Navegación:", [
+    "🏠 Dashboard Principal", 
+    "📦 Agente 1: Recepción", 
+    "🚜 Agente 2: Picking", 
+    "⚖️ Agente 3: Packing", 
+    "🔄 Agente 4: Devoluciones", 
+    "🚛 Agente 5: Ruteo"
+])
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# 3. INTERFAZ EN FORMATO PLANO ULTRA-ESTABLE
+# ==============================================================================
+# 5. CONTROL DE VISTAS Y NAVEGACIÓN (LÓGICA OPERATIVA COMPROBADA)
+# ==============================================================================
+
 if opcion == "🏠 Dashboard Principal":
-    st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
-        
-    st.markdown("<br>", unsafe_allow_html=True)
-    col1, col2, col3, col4 = st.columns(4)
-    with col1: st.metric(label="📥 Agente 1 (Fill Rate)", value="33.33%", delta="-61.67% vs Meta")
-    with col2: st.metric(label="🚜 Agente 2 (Picking)", value="85.00%", delta="-13.00% vs Meta")
-    with col3: st.metric(label="⚖️ Agente 3 (Packing)", value="2.00%", delta="+2.00% Desvío")
-    with col4: st.metric(label="🚛 Agente 5 (OTIF Ruteo)", value="94.20%", delta="-3.80% vs Meta")
-        
-    st.markdown("<br><h3>📊 Rendimiento vs Metas del Proyecto</h3>", unsafe_allow_html=True)
-    chart_data = pd.DataFrame({
-        'Indicador': ['Fill Rate', 'Picking', 'Packing', 'OTIF Ruteo'],
-        'Progreso Real': [33.33, 85.00, 2.00, 94.20],
-        'Meta Objetivo': [95.00, 98.00, 0.00, 95.00]
-    }).set_index('Indicador')
-    st.bar_chart(chart_data, use_container_width=True)
+    st.title("🏠 Control General Operativo - KPIs")
+    df_dash = cargar_datos_sheet("Dashboard")
     
-    st.markdown("<br><h3>🚦 Estado Operativo de los Procesos</h3>", unsafe_allow_html=True)
-    st.markdown("""
-        <div class="status-card status-critico">
-            <strong>🔴 Agente 1: Recepción (Fill Rate)</strong> — Estatus: <u>ALERTA CRÍTICA</u> <br>
-            <span style="font-size: 13px; opacity: 0.8;">Progreso Actual: 33.33% | Meta del Negocio: 95.00%</span>
-        </div>
-        <div class="status-card status-revision">
-            <strong>🟠 Agente 2: Eficiencia de Picking (Ruta)</strong> — Estatus: <u>REVISIÓN</u> <br>
-            <span style="font-size: 13px; opacity: 0.8;">Progreso Actual: 85.00% | Meta del Negocio: 98.00%</span>
-        </div>
-        <div class="status-card status-controlado">
-            <strong>🔵 Agente 3: Desvío de Peso Packing (Báscula)</strong> — Estatus: <u>CONTROLADO</u> <br>
-            <span style="font-size: 13px; opacity: 0.8;">Desvío Actual: 2.00% | Límite Permitido: 0.00%</span>
-        </div>
-        <div class="status-card status-revision">
-            <strong>🟠 Agente 4: Logística Inversa Devoluciones</strong> — Estatus: <u>REVISIÓN</u> <br>
-            <span style="font-size: 13px; opacity: 0.8;">Eficiencia Actual: 91.00% | Meta del Negocio: 95.00%</span>
-        </div>
-        <div class="status-card status-optimo">
-            <strong>🟢 Agente 5: Optimización de Ruteo (OTIF)</strong> — Estatus: <u>ÓPTIMO OBJETIVO</u> <br>
-            <span style="font-size: 13px; opacity: 0.8;">Eficiencia de Ruta: 94.20% | Meta del Negocio: 98.00%</span>
-        </div>
-    """, unsafe_allow_html=True)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(label="Eficiencia General de Planta", value="94.2%", delta="1.5%")
+    with col2:
+        st.metric(label="Pedidos Despachados Hoy", value="1,240", delta="85")
+    with col3:
+        st.metric(label="Incidentes Activos", value="2", delta="-1")
+        
+    st.subheader("📋 Registro de Control Integrado")
+    if not df_dash.empty and len(df_dash.columns) >= 3:
+        renderizar_tabla_premium(df_dash, df_dash.columns[0], df_dash.columns[1], df_dash.columns[2])
 
-elif opcion == "📦 Agente 1: Recepción":
-    st.markdown("<h1>📦 Agente 1 - Recepción (Fill Rate)</h1>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.metric(label="Precisión de Recepción Actual", value="33.33%", delta="-61.67% vs Meta")
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.progress(0.33)
-    st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drásticamente por debajo del objetivo del 95.00%.")
-
-elif opcion == "🚜 Agente 2: Picking":
-    st.markdown("<h1>🚜 Agente 2 - Optimización de Rutas (Picking)</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Filtro de pedidos pendientes clasificados automáticamente por ubicación física</p>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.metric(label="Eficiencia de la Ruta Activa", value="85.00%", delta="-13.00% vs Objetivo (98%)")
-    st.success("¼ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
-    st.markdown("<br><h3>📋 Instrucciones de Recolección Secuencial</h3>", unsafe_allow_html=True)
-    st.info("📍 PASO 1: Ir a Pasillo A → Nivel 1 | Recoger: 15 unidades de Bujías (Pedido #1025)")
-    st.info("📍 PASO 2: Ir a Pasillo B → Nivel 3 | Recoger: 10 unidades de Filtros (Pedido #1024)")
-
-elif opcion == "⚖️ Agente 3: Packing":
-    st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Auditoría automatizada de tolerancia de peso por bulto despachado</p>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.metric(label="Desvío Promedio General", value="2.00%", delta="+2.00% Tolerancia Máxima")
-    st.warning("🔍 Auditoría de Báscula: Se detectaron variaciones de peso. Validar bultos marcados antes del flejado final.")
-    st.markdown("<br><h3>📋 Instrucciones de Auditoría de Pesaje</h3>", unsafe_allow_html=True)
-    st.success("✅ COMPLETO: Pedido #1024 (Distribuidora A) | Desvío: 0.02 kg (Dentro de margen)")
-    st.error("❌ REVISAR CONTENIDO: Pedido #1025 (Logística B) | Desvío: +0.25 kg (EXCESO DETECTADO)")
-
-elif opcion == "🔄 Agente 4: Devoluciones":
-    st.markdown("<h1>🔄 Agente 4 - Logística Inversa (Devoluciones)</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Clasificación automática de mercancía retornada y motivos de rechazo</p>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.metric(label="Eficiencia de Logística Inversa", value="91.00%", delta="-4.00% vs Objetivo (95%)")
-    st.warning("🔄 Auditoría de Retornos: Revisar las prioridades de reingreso a stock para evitar obsolescencia de componentes.")
-    st.markdown("<br><h3>📋 Plan de Clasificación e Ingreso a Stock</h3>", unsafe_allow_html=True)
-    st.warning("⚠️ RETORNO EN REVISIÓN: Pedido #1011 (Comercializadora X) | Motivo: Error de despacho | Acción: Inspección visual obligatoria")
-    st.success("✅ REINGRESO AUTORIZADO: Pedido #1009 (Taller Central) | Motivo: Garantía de fábrica | Acción: Actualizar stock de inmediato")
-
-elif opcion == "🇲ic Agente 5: Ruteo" or opcion == "🚛 Agente 5: Ruteo":
-    st.markdown("<h1>🚛 Agente 5 - Optimización de Ruteo (OTIF)</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Despacho inteligente basado en las secuencias óptimas de entrega en carretera</p>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.metric(label="Nivel de Cumplimiento OTIF Actual", value="94.20%", delta="-3.80% vs Target (98%)")
-    st.info("🚛 Monitoreo de Consolidados: Rutas generadas por la IA. Validar secuencias asignadas para evitar ventanas demoradas.")
-    st.markdown("<br><h3>📋 Plan de Carga Secuencial por Ruta de Distribución</h3>", unsafe_allow_html=True)
-    st.info("🚚 RUTA 1 (Zona Norte) — Transporte: Unidad Camión 04 | Pedido: #1040 — Estado: COMPLETO EN ESPERA DE SALIDA")
 
             
 

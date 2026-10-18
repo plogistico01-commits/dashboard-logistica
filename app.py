@@ -23,7 +23,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. SIDEBAR FIJA
+# 2. SIDEBAR FIJA CORREGIDA
 st.sidebar.markdown("""
     <div style='text-align: center; padding: 15px 0;'>
         <div style='background-color: #FFFFFF; width: 75px; height: 75px; border-radius: 50%; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;'>
@@ -35,11 +35,12 @@ st.sidebar.markdown("""
     <hr style='border-color: rgba(255,255,255,0.15); margin-top: 5px;'>
 """, unsafe_allow_html=True)
 
+# Menú de selección con nombres de opciones limpios y estables
 opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", "📦 Agente 1: Recepción", "🚜 Agente 2: Picking", "⚖️ Agente 3: Packing", "🔄 Agente 4: Devoluciones", "🚛 Agente 5: Despacho (OTIF)"])
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# 3. MÓDULOS DE NAVEGACIÓN EN FORMATO PLANO Y SEGURO
+# 3. MÓDULOS DE NAVEGACIÓN COMPLETAMENTE INDEPENDIENTES
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
@@ -103,10 +104,9 @@ elif opcion == "🚜 Agente 2: Picking":
     try:
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
-        if not df_picking.empty and 'PASILLO' in df_picking.columns:
-            df_optimizado = df_picking.sort_values(by=list(df_picking.columns[:2])).reset_index(drop=True)
-            for idx, row in df_optimizado.iterrows():
-                st.info(f"📍 PASO {idx+1}: Moverse por el almacén | Registro ID: {row.iloc[0]}")
+        if not df_picking.empty:
+            for idx, row in df_picking.head(10).iterrows():
+                st.info(f"📍 PASO {idx+1}: Moverse a ubicación según hoja de ruta en Sheets | Datos: {list(row.values[:3])}")
         else:
             st.info("📍 PASO 1: Ir a Pasillo A → Nivel 1 | Recoger: 15 unidades de Bujías (Pedido #1025)")
             st.info("📍 PASO 2: Ir a Pasillo B → Nivel 3 | Recoger: 10 unidades de Filtros (Pedido #1024)")
@@ -126,9 +126,9 @@ elif opcion == "⚖️ Agente 3: Packing":
     try:
         df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
         df_packing.columns = df_packing.columns.str.strip().str.upper()
-        if not df_packing.empty and 'PEDIDO' in df_packing.columns:
-            for idx, row in df_packing.iterrows():
-                st.warning(f"⚖️ Bulto en Auditoría | ID Registro: {row.iloc[0]}")
+        if not df_packing.empty:
+            for idx, row in df_packing.head(10).iterrows():
+                st.warning(f"⚖️ Bulto en Auditoría | Registro: {list(row.values[:4])}")
         else:
             st.success("✅ COMPLETO: Pedido #1024 (Distribuidora A) | Desvío: 0.02 kg (Dentro de margen)")
             st.error("❌ REVISAR CONTENIDO: Pedido #1025 (Logística B) | Desvío: +0.25 kg (EXCESO DETECTADO)")

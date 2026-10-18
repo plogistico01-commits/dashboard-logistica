@@ -121,51 +121,52 @@ elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Rutas optimizadas y órdenes asignadas a los operarios en almacén</p>", unsafe_allow_html=True)
     
     url_picking = f"https://google.com{SHEET_ID}/export?format=csv&gid={GID_PICKING}"
-    df_picking = pd.DataFrame()
     
     try:
         df_picking = pd.read_csv(url_picking)
+        if df_picking.empty or 'OPERARIO' not in df_picking.columns:
+            raise ValueError()
     except Exception:
-        df_picking = pd.DataFrame()
-
-    if not df_picking.empty and 'OPERARIO' in df_picking.columns:
-        for idx, row in df_picking.iterrows():
-            operario = row.get('OPERARIO', 'No Asignado')
-            zona = row.get('ZONA', 'General')
-            articulos = row.get('ARTICULOS', 0)
-            estado = row.get('ESTADO', 'Pendiente')
-            st.info(f"📋 Tarea #{idx + 1} — Operario: {operario} | Zona: {zona} | Artículos: {articulos} | Estado: {estado}")
-    else:
         st.warning("⚠️ Modo de Contingencia Activo: No se detectaron datos en tiempo real en la nube.")
-        contingencia_picking = [
+        df_picking = pd.DataFrame([
             {'OPERARIO': 'Carlos Mendoza', 'ZONA': 'Pasillo A (Nivel 1)', 'ARTICULOS': 24, 'ESTADO': 'En Ruta'},
             {'OPERARIO': 'Elena Rostova', 'ZONA': 'Pasillo D (High-Bay)', 'ARTICULOS': 110, 'ESTADO': 'Pendiente'},
             {'OPERARIO': 'Juan Alarcón', 'ZONA': 'Pasillo B (Mezzanine)', 'ARTICULOS': 45, 'ESTADO': 'Completado'}
-        ]
-        for idx, tarea in enumerate(contingencia_picking):
-            st.info(f"📋 Tarea #{idx + 1} (Contingencia) — Operario: {tarea['OPERARIO']} | Zona: {tarea['ZONA']} | Artículos: {tarea['ARTICULOS']} | Estado: {tarea['ESTADO']}")
+        ])
+
+    for idx, row in df_picking.iterrows():
+        operario = row.get('OPERARIO', 'No Asignado')
+        zona = row.get('ZONA', 'General')
+        articulos = row.get('ARTICULOS', 0)
+        estado = row.get('ESTADO', 'Pendiente')
+        st.info(f"📋 Tarea #{idx + 1} — Operario: {operario} | Zona: {zona} | Artículos: {articulos} | Estado: {estado}")
 
 elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<h1>Agente 3: Control de Peso en Packing</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Validación física de empaque mediante báscula automatizada de fin de línea</p>", unsafe_allow_html=True)
     
     url_packing = f"https://google.com{SHEET_ID}/export?format=csv&gid={GID_PACKING}"
-    df_packing = pd.DataFrame()
     
     try:
         df_packing = pd.read_csv(url_packing)
+        if df_packing.empty or 'PEDIDO' not in df_packing.columns:
+            raise ValueError()
     except Exception:
-        df_packing = pd.DataFrame()
+        st.warning("⚠️ Modo de Contingencia Activo: No se detectaron registros de báscula en la nube.")
+        df_packing = pd.DataFrame([
+            {'PEDIDO': 'ORD-9921', 'PESO_TEORICO': 4.50, 'PESO_REAL': 4.51},
+            {'PEDIDO': 'ORD-9922', 'PESO_TEORICO': 12.80, 'PESO_REAL': 13.45}
+        ])
 
-    if not df_packing.empty and 'PEDIDO' in df_packing.columns:
-        for idx, row in df_packing.iterrows():
-            pedido = row.get('PEDIDO', 'N/A')
-            peso_teo = row.get('PESO_TEORICO', 0.0)
-            peso_real = row.get('PESO_REAL', 0.0)
-            desvio = abs(peso_real - peso_teo)
-            if desvio <= 0.05:
-                st.success(f"✅ Pedido #{pedido} — Peso Exacto | Teórico: {peso_teo} kg | Real: {peso_real} kg | Dif: {desvio:.2f} kg")
-            else:
+    for idx, row in df_packing.iterrows():
+        pedido = row.get('PEDIDO', 'N/A')
+        peso_teo = row.get('PESO_TEORICO', 0.0)
+        peso_real = row.get('PESO_REAL', 0.0)
+        desvio = abs(peso_real - peso_teo)
+        
+        if desvio <= 0.05:
+            st.success(f"✅ Pedido #{pedido} — Peso Exacto | Teórico: {peso_teo} kg | Real: {peso_real} kg | Dif: {desvio:.2f} kg")
+        else:
 
 
 

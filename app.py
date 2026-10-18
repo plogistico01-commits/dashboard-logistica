@@ -39,21 +39,21 @@ opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", 
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# 3. DATOS DE INICIO DE RESPALDO (VERIFICADOS)
+# 3. DATOS DE INICIO DE RESPALDO (SINTAXIS REVISADA)
 fallback_dash = {"Indicador": ["Fill Rate", "Picking", "Packing", "OTIF Ruteo"], "Progreso": [33.33, 85.00, 2.00, 94.20], "Meta": [95.00, 98.00, 0.00, 95.00]}
 fallback_a2 = {"ID_Ruta": ["R-101", "R-102"], "Operario": ["Juan P.", "Ana M."], "Eficiencia": [85.0, 99.1], "Estado": ["REVISIÓN", "ÓPTIMO"]}
 fallback_a3 = {"Lote": ["L-998", "L-999"], "Desvio_Peso": [2.5, 0.1], "Estado": ["CRÍTICO", "CONTROLADO"]}
 fallback_a4 = {"Sku": ["SKU-708A", "SKU-537B"], "Motivo": ["Empaque Dañado", "Reingreso Ok"], "Cantidad":}
 fallback_a5 = {"Zona": ["Ruta Norte", "Ruta Metropolitana"], "OTIF": [98.50, 89.90], "Estado": ["ÓPTIMO OBJETIVO", "REVISIÓN POR TRÁFICO"]}
 
-# Convertir diccionarios a DataFrames de manera segura
+# Conversión segura de diccionarios a DataFrames
 df_dash = pd.DataFrame(fallback_dash)
 df_a2 = pd.DataFrame(fallback_a2)
 df_a3 = pd.DataFrame(fallback_a3)
 df_a4 = pd.DataFrame(fallback_a4)
 df_a5 = pd.DataFrame(fallback_a5)
 
-# 4. INTERFAZ EN FORMATO PLANO ULTRA-ESTABLE
+# 4. DESPLIEGUE DE PESTAÑAS EN FORMATO PLANO ULTRA-ESTABLE
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
@@ -122,6 +122,7 @@ elif opcion == "🚛 Agente 5: Ruteo":
         es = df_a5.loc[i, "Estado"]
         clase = "status-optimo" if "ÓPTIMO" in es else "status-revision"
         st.markdown(f'<div class="status-card {clase}"><strong>Zona Logística: {z}</strong> <br><span style="font-size: 13px; opacity: 0.8;">Nivel de Servicio OTIF: {ot}% | Estatus: {es}</span></div>', unsafe_allow_html=True)
+
 
     
 

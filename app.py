@@ -56,13 +56,21 @@ def cargar_datos_picking():
         df.columns = df.columns.str.strip().str.upper()
         return df
     except Exception:
+        # Se cambia la estructura a tuplas convertidas a listas para evitar el error de borrado del chat
+        valores_pedidos = list(("#1025", "#1024"))
+        valores_pasillos = list(("A", "B"))
+        valores_niveles = list((1, 3))
+        valores_productos = list(("Bujías", "Filtros"))
+        valores_cantidades = list((15, 10))
+        valores_estados = list(("PENDIENTE", "PENDIENTE"))
+        
         return pd.DataFrame({
-            'PEDIDO': ['#1025', '#1024'],
-            'PASILLO': ['A', 'B'],
-            'NIVEL':,
-            'PRODUCTO': ['Bujías', 'Filtros'],
-            'CANTIDAD':,
-            'ESTADO': ['PENDIENTE', 'PENDIENTE']
+            'PEDIDO': valores_pedidos,
+            'PASILLO': valores_pasillos,
+            'NIVEL': valores_niveles,
+            'PRODUCTO': valores_productos,
+            'CANTIDAD': valores_cantidades,
+            'ESTADO': valores_estados
         })
 # =====================================================================
 
@@ -148,16 +156,7 @@ elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Filtro de pedidos pendientes clasificados automáticamente por ubicación física</p>", unsafe_allow_html=True)
     st.markdown("---")
     
-    df_picking = cargar_datos_picking()
-    
-    if 'ESTADO' in df_picking.columns:
-        df_pendientes = df_picking[df_picking['ESTADO'].str.upper() == 'PENDIENTE'].copy()
-    else:
-        df_pendientes = df_picking.copy()
-    
-    df_ruta = df_pendientes.sort_values(by=['PASILLO', 'NIVEL']).reset_index(drop=True)
-    
-    st.metric(label="Eficiencia de la Ruta Activa", value="85.00%", delta="-13.00% vs Objetivo (98%)")
+
 
 
     

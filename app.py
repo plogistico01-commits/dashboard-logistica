@@ -15,6 +15,8 @@ st.markdown("""
         div[data-testid="stMetricLabel"] > div { color: #4B5563 !important; font-weight: 600 !important; font-size: 14px !important; }
         div[data-testid="stMetricValue"] > div { color: #111827 !important; font-weight: 700 !important; font-size: 28px !important; }
         h1, h2, h3 { color: #1F2937 !important; font-family: 'Inter', sans-serif !important; }
+        
+        /* Semáforos Corporativos Premium */
         .status-card { padding: 15px 20px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; border-left: 6px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
         .status-critico { background-color: #FEF2F2; border-color: #EF4444; color: #991B1B; }
         .status-revision { background-color: #FFF7ED; border-color: #F97316; color: #9A3412; }
@@ -23,41 +25,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. CENTRALIZACIÓN EXCLUSIVA DE CONEXIONES EN LA CABECERA (CERO RIESGO DE INDENTACIÓN)
-URL_PICKING = "https://google.com"
-URL_PACKING = "https://google.com"
-URL_DEVOLUCIONES = "https://google.com"
-URL_RUTEO = "https://google.com"
-
-# Carga global Agente 2
-try:
-    df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
-    df_picking.columns = df_picking.columns.str.strip().str.upper()
-except Exception:
-    df_picking = pd.DataFrame()
-
-# Carga global Agente 3
-try:
-    df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
-    df_packing.columns = df_packing.columns.str.strip().str.upper()
-except Exception:
-    df_packing = pd.DataFrame()
-
-# Carga global Agente 4
-try:
-    df_dev = pd.read_csv(URL_DEVOLUCIONES, encoding='utf-8')
-    df_dev.columns = df_dev.columns.str.strip().str.upper()
-except Exception:
-    df_dev = pd.DataFrame()
-
-# Carga global Agente 5 (Ruteo)
-try:
-    df_ruteo = pd.read_csv(URL_RUTEO, encoding='utf-8')
-    df_ruteo.columns = df_ruteo.columns.str.strip().str.upper()
-except Exception:
-    df_ruteo = pd.DataFrame()
-
-# 3. SIDEBAR FIJA CON NOMBRES DE PESTAÑAS REALES
+# 2. SIDEBAR LOGÍSTICA FIJA
 st.sidebar.markdown("""
     <div style='text-align: center; padding: 15px 0;'>
         <div style='background-color: #FFFFFF; width: 75px; height: 75px; border-radius: 50%; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;'>
@@ -73,7 +41,10 @@ opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", 
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# 4. RENDERIZADO DE INTERFAZ TOTALMENTE PLANO Y COMPONENTES NATIVOS LOGÍSTICOS
+# 3. CONEXIONES DIRECTAS POR GID MAPEADAS DESDE LA CABECERA PRINCIPAL
+URL_BASE = "https://google.com"
+
+# 4. MÓDULOS DE NAVEGACIÓN TOTALMENTE SEPARADOS EN ESTRUCTURA PLANA NATIVA
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
@@ -133,9 +104,19 @@ elif opcion == "🚜 Agente 2: Picking":
     st.success("✅ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
     st.markdown("<br><h3>📋 Instrucciones de Recolección Secuencial</h3>", unsafe_allow_html=True)
     
-    if not df_picking.empty:
-        st.dataframe(df_picking, use_container_width=True)
-    else:
+    # Intentamos leer la pestaña de Picking de producción (537805708)
+    try:
+        df_p = pd.read_csv(f"{URL_BASE}537805708", encoding='utf-8')
+        df_p.columns = df_p.columns.str.strip().str.upper()
+        # Buscamos de forma flexible las columnas
+        c_p = [c for c in df_p.columns if 'PASILLO' in c or 'ZONA' in c][0]
+        c_e = [c for c in df_p.columns if 'ESTANTER' in c or 'NIVEL' in c][0]
+        df_opt = df_p.sort_values(by=[c_p, c_e]).reset_index(drop=True)
+        
+        for idx, row in df_opt.head(10).iterrows():
+            st.info(f"📍 PASO {idx+1}: Ir a {row[c_p]} → {row[c_e]} | Artículo: {row.get('ARTÍCULO', row.get('ARTICULO', 'Producto'))} | Cantidad: {row.get('CANTIDAD', 0)} uds | Pedido: {row.get('PEDIDO', 'N/A')}")
+    except Exception:
+        # Caída limpia nativa obligatoria libre de tablas indescifrables
         st.info("📍 PASO 1: Ir a Pasillo A → Nivel 1 | Recoger: 15 unidades de Bujías (Pedido #1025)")
         st.info("📍 PASO 2: Ir a Pasillo B → Nivel 3 | Recoger: 10 unidades de Filtros (Pedido #1024)")
 
@@ -147,14 +128,22 @@ elif opcion == "⚖️ Agente 3: Packing":
     st.warning("🔍 Auditoría de Báscula: Se detectaron variaciones de peso. Validar bultos marcados antes del flejado final.")
     st.markdown("<br><h3>📋 Instrucciones de Auditoría de Pesaje</h3>", unsafe_allow_html=True)
     
-    if not df_packing.empty:
-        st.dataframe(df_packing, use_container_width=True)
-    else:
-        st.success("✅ COMPLETO: Pedido #1024 (Distribuidora A) | Desvío: 0.02 kg (Dentro de margen)")
-        st.error("❌ REVISAR CONTENIDO: Pedido #1025 (Logística B) | Desvío: +0.25 kg (EXCESO DETECTADO)")
+    # Intentamos leer la pestaña de Packing de producción (822850707)
+    try:
+        df_pk = pd.read_csv(f"{URL_BASE}822850707", encoding='utf-8')
+        df_pk.columns = df_pk.columns.str.strip().str.upper()
+        c_ped = [c for c in df_pk.columns if 'PEDIDO' in c or 'ORDEN' in c][0]
+        
+        for idx, row in df_pk.head(10).iterrows():
+            alerta = str(row.get('ESTAR ALERTA', row.get('ESTADO', 'OK'))).upper()
+            msg = f"⚖️ Pedido {row[c_ped]} | Teórico: {row.get('PESO TEÓRICO (KG)', 0)} kg | Báscula: {row.get('PESO BÁSCULA (KG)', 0)} kg | Desvío: {row.get('DESVÍO (KG)', 0)} kg"
+            if "ALERTA" in alerta or "EXCESO" in alerta:
+                st.error(f"❌ REVISAR: {msg}")
+            else:
+                st.success(f"✅ CONTROLADO: {msg}")
+    except Exception:
+        # Caída limpia nativa obligatoria libre de tablas indescifrables
 
-elif opcion == "🔄 Agente 4: Devoluciones":
-    st.markdown("<h1>🔄 Agente 4 - Logística Inversa (Devoluciones)</h1>", unsafe_allow_html=True)
 
 
 

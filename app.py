@@ -13,7 +13,7 @@ st.markdown("""
         .stRadio > div { background-color: rgba(255, 255, 255, 0.1) !important; padding: 10px !important; border-radius: 8px !important; }
         div[data-testid="stMetric"] { background-color: #FFFFFF !important; padding: 20px 25px !important; border-radius: 12px !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important; border: 1px solid #E5E7EB !important; transition: transform 0.2s ease; }
         div[data-testid="stMetric"]:hover { transform: translateY(-2px); }
-        div[data-testid="stMetricLabel"] > div { color: #4B5563 !important; font-weight: 600 !important; font-size: 14px !important; }
+        data-testid="stMetricLabel"] > div { color: #4B5563 !important; font-weight: 600 !important; font-size: 14px !important; }
         div[data-testid="stMetricValue"] > div { color: #111827 !important; font-weight: 700 !important; font-size: 28px !important; }
         h1, h2, h3 { color: #1F2937 !important; font-family: 'Inter', sans-serif !important; }
         .status-card { padding: 15px 20px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; border-left: 6px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
@@ -36,7 +36,7 @@ WEBHOOKS_DISCORD = {
     "dashboard": "https://discord.com"
 }
 
-# GIDs Maestros de tu documento de Google Sheets Publicado
+# GIDs correspondientes a cada pestaña de tu Google Sheets publicado
 GIDS = {
     "picking": "537805708",
     "packing": "822850707",
@@ -54,16 +54,13 @@ def enviar_mensaje_discord(area, mensaje):
             pass
 
 def descargar_pestana_sheets(nombre_pestana):
-    """Descarga datos adaptándose estrictamente al formato de publicación /pubhtml corporativo"""
     gid = GIDS.get(nombre_pestana)
-    # Reestructuración de URL adaptada para enlaces tipo /pubhtml (/d/e/...)
     url_csv = f"https://google.com{gid}"
     try:
         df = pd.read_csv(url_csv, encoding='utf-8')
         df.columns = df.columns.str.strip().str.upper()
         return df
     except Exception:
-        # Respaldos fijos de contingencia para asegurar que la pantalla nunca se quede en blanco
         if nombre_pestana == "picking":
             return pd.DataFrame({
                 'PEDIDO': list(("#1025", "#1024")), 'PASILLO': list(("A", "B")), 'NIVEL': list((1, 3)),
@@ -155,6 +152,10 @@ if opcion == "🏠 Dashboard Principal":
 elif opcion == "📦 Agente 1: Recepción":
     st.markdown("<h1>📦 Agente 1 - Recepción (Fill Rate)</h1>", unsafe_allow_html=True)
     st.markdown("---")
+    st.metric(label="Precisión de Recepción Actual", value="33.33%", delta="-61.67% vs Meta")
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.progress(0.33)
+    st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drásticamente por debajo del objetivo del 95.00%.")
 
 
     

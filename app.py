@@ -93,23 +93,23 @@ elif opcion == "📦 Agente 1: Recepción":
 
 elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<h1>🚜 Agente 2 - Optimización de Rutas (Picking)</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Filtro de pedidos pendientes classified automágicamente por ubicación física</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Filtro de pedidos pendientes clasificados automáticamente por ubicación física</p>", unsafe_allow_html=True)
     st.markdown("---")
     st.metric(label="Eficiencia de la Ruta Activa", value="85.00%", delta="-13.00% vs Objetivo (98%)")
-    st.success("✅ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
+    st.success("¼ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
     st.markdown("<br><h3>📋 Instrucciones de Recolección Secuencial</h3>", unsafe_allow_html=True)
     
     URL_PICKING = "https://google.com"
     try:
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
-        if not df_picking.empty and 'PASILLO' in df_picking.columns:
-            df_optimizado = df_picking.sort_values(by=list(df_picking.columns[:2])).reset_index(drop=True)
-            for idx, row in df_optimizado.iterrows():
-                st.info(f"📍 PASO {idx+1}: Moverse por el almacén | Registro ID: {row.iloc}")
-        else:
-            st.info("📍 PASO 1: Ir a Pasillo A → Nivel 1 | Recoger: 15 unidades de Bujías (Pedido #1025)")
-            st.info("📍 PASO 2: Ir a Pasillo B → Nivel 3 | Recoger: 10 unidades de Filtros (Pedido #1024)")
+        # Buscamos columnas de manera flexible por palabra clave para evitar vacíos
+        col_p = [c for c in df_picking.columns if 'PASILLO' in c or 'ZONA' in c][0]
+        col_e = [c for c in df_picking.columns if 'ESTANTER' in c or 'NIVEL' in c or 'ALTURA' in c][0]
+        
+        df_optimizado = df_picking.sort_values(by=[col_p, col_e]).reset_index(drop=True)
+        for idx, row in df_optimizado.head(15).iterrows():
+            st.info(f"📍 PASO {idx+1}: Ir a {row[col_p]} → {row[col_e]} | Articulo: {row.iloc[3]} | Cantidad: {row.iloc[4]} | Pedido: {row.iloc[0]}")
     except Exception:
         st.info("📍 PASO 1: Ir a Pasillo A → Nivel 1 | Recoger: 15 unidades de Bujías (Pedido #1025)")
         st.info("📍 PASO 2: Ir a Pasillo B → Nivel 3 | Recoger: 10 unidades de Filtros (Pedido #1024)")
@@ -126,18 +126,17 @@ elif opcion == "⚖️ Agente 3: Packing":
     try:
         df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
         df_packing.columns = df_packing.columns.str.strip().str.upper()
-        if not df_packing.empty and 'PEDIDO' in df_packing.columns:
-            for idx, row in df_packing.iterrows():
-                st.warning(f"⚖️ Bulto en Auditoría | ID Registro: {row.iloc}")
-        else:
-            st.success("✅ COMPLETO: Pedido #1024 (Distribuidora A) | Desvío: 0.02 kg (Dentro de margen)")
-            st.error("❌ REVISAR CONTENIDO: Pedido #1025 (Logística B) | Desvío: +0.25 kg (EXCESO DETECTADO)")
+        for idx, row in df_packing.head(15).iterrows():
+            st.warning(f"⚖️ Control Báscula — Pedido {row.iloc[0]} ({row.iloc[1]}) | Teórico: {row.iloc[2]}kg | Real: {row.iloc[3]}kg | Estado: {row.iloc[5]}")
     except Exception:
         st.success("✅ COMPLETO: Pedido #1024 (Distribuidora A) | Desvío: 0.02 kg (Dentro de margen)")
         st.error("❌ REVISAR CONTENIDO: Pedido #1025 (Logística B) | Desvío: +0.25 kg (EXCESO DETECTADO)")
 
 elif opcion == "🔄 Agente 4: Devoluciones":
     st.markdown("<h1>🔄 Agente 4 - Logística Inversa (Devoluciones)</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Clasificación automática de mercancía retornada y motivos de rechazo</p>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.metric(label="Eficiencia de Logística Inversa", value="91.00%", delta="-4.00% vs Objetivo (95%)")
 
 
 

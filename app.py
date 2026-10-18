@@ -31,6 +31,17 @@ GID_PICKING = "537805708"
 GID_PACKING = "822850707"
 GID_DEVOLUCIONES = "999999999"
 
+# FUNCIÓN ÚNICA DE CONEXIÓN CON CONTROL TOTAL DE EXCEPCIONES Y CONTINGENCIA INMEDIATA
+def cargar_datos_contingencia(gid, datos_fallback):
+    url = f"https://google.com{SHEET_ID}/export?format=csv&gid={gid}"
+    try:
+        df = pd.read_csv(url)
+        if df.empty:
+            return pd.DataFrame(datos_fallback)
+        return df
+    except Exception:
+        return pd.DataFrame(datos_fallback)
+
 # Barra Lateral (Sidebar) Corporativo
 st.sidebar.markdown("""
     <div style='text-align: center; padding: 15px 0;'>
@@ -53,7 +64,7 @@ opcion = st.sidebar.radio("Menú de Navegación:", [
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# --- LÓGICA DE RENDERIZADO TOTALMENTE LINEAL ---
+# --- LÓGICA DE RENDERIZADO TOTALMENTE LINEAL Y PLANO ---
 
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
@@ -111,53 +122,38 @@ elif opcion == "📦 Agente 1: Recepción":
 elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<h1>Agente 2: Planificación de Picking</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Rutas optimizadas y órdenes asignadas a los operarios en almacén</p>", unsafe_allow_html=True)
-    
-    url_picking = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID_PICKING}"
-    try:
-        df_picking = pd.read_csv(url_picking)
-        if df_picking.empty or 'OPERARIO' not in df_picking.columns:
-            raise ValueError()
-    except Exception:
-        df_picking = pd.DataFrame([
-            {'OPERARIO': 'Carlos Mendoza', 'ZONA': 'Pasillo A (Nivel 1)', 'ARTICULOS': 24, 'ESTADO': 'En Ruta'},
-            {'OPERARIO': 'Elena Rostova', 'ZONA': 'Pasillo D (High-Bay)', 'ARTICULOS': 110, 'ESTADO': 'Pendiente'},
-            {'OPERARIO': 'Juan Alarcón', 'ZONA': 'Pasillo B (Mezzanine)', 'ARTICULOS': 45, 'ESTADO': 'Completado'}
-        ])
-
+    fallback_p = [
+        {'OPERARIO': 'Carlos Mendoza', 'ZONA': 'Pasillo A (Nivel 1)', 'ARTICULOS': 24, 'ESTADO': 'En Ruta'},
+        {'OPERARIO': 'Elena Rostova', 'ZONA': 'Pasillo D (High-Bay)', 'ARTICULOS': 110, 'ESTADO': 'Pendiente'},
+        {'OPERARIO': 'Juan Alarcón', 'ZONA': 'Pasillo B (Mezzanine)', 'ARTICULOS': 45, 'ESTADO': 'Completado'}
+    ]
+    df_picking = cargar_datos_contingencia(GID_PICKING, fallback_p)
     for idx, row in df_picking.iterrows():
-        st.info(f"📋 Tarea #{idx + 1} — Operario: {row['OPERARIO']} | Zona: {row['ZONA']} | Artículos: {row['ARTICULOS']} | Estado: {row['ESTADO']}")
+        st.info(f"📋 Tarea #{idx + 1} — Operario: {row.get('OPERARIO', 'N/A')} | Zona: {row.get('ZONA', 'N/A')} | Artículos: {row.get('ARTICULOS', 0)} | Estado: {row.get('ESTADO', 'N/A')}")
 
 elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<h1>Agente 3: Control de Peso en Packing</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Validación física de empaque mediante báscula automatizada de fin de línea</p>", unsafe_allow_html=True)
-    
-    url_packing = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID_PACKING}"
-    try:
-        df_packing = pd.read_csv(url_packing)
-        if df_packing.empty or 'PEDIDO' not in df_packing.columns:
-            raise ValueError()
-    except Exception:
-        df_packing = pd.DataFrame([
-            {'PEDIDO': 'ORD-9921', 'PESO_TEORICO': 4.50, 'PESO_REAL': 4.51},
-            {'PEDIDO': 'ORD-9922', 'PESO_TEORICO': 12.80, 'PESO_REAL': 13.45}
-        ])
-
+    fallback_pa = [
+        {'PEDIDO': 'ORD-9921', 'PESO_TEORICO': 4.50, 'PESO_REAL': 4.51},
+        {'PEDIDO': 'ORD-9922', 'PESO_TEORICO': 12.80, 'PESO_REAL': 13.45}
+    ]
+    df_packing = cargar_datos_contingencia(GID_PACKING, fallback_pa)
     for idx, row in df_packing.iterrows():
-        p_teo = float(row['PESO_TEORICO'])
-        p_real = float(row['PESO_REAL'])
+        p_teo = float(row.get('PESO_TEORICO', 0.0))
+        p_real = float(row.get('PESO_REAL', 0.0))
         diff = abs(p_real - p_teo)
         if diff <= 0.05:
-            st.success(f"✅ Pedido #{row['PEDIDO']} — Peso Exacto | Teórico: {p_teo} kg | Real: {p_real} kg | Dif: {diff:.2f} kg")
-        if diff > 0.05:
-            st.error(f"❌ Pedido #{row['PEDIDO']} — Desvío Detectado | Teórico: {p_teo} kg | Real: {p_real} kg | Dif: {diff:.2f} kg")
+            st.success(f"✅ Pedido #{row.get('PEDIDO', 'N/A')} — Peso Exacto | Teórico: {p_teo} kg | Real: {p_real} kg | Dif: {diff:.2f} kg")
+        else:
+            st.error(f"❌ Pedido #{row.get('PEDIDO', 'N/A')} — Desvío Detectado | Teórico: {p_teo} kg | Real: {p_real} kg | Dif: {diff:.2f} kg")
 
 elif opcion == "🔄 Agente 4: Devoluciones":
     st.markdown("<h1>Agente 4: Logística Inversa y Devoluciones</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Clasificación de productos devueltos, motivos y estado de inspección en almacén</p>", unsafe_allow_html=True)
-    
-    url_devoluciones = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID_DEVOLUCIONES}"
-    try:
-        df_devoluciones = pd.read_csv(url_devoluciones)
+    fallback_d = [
+        {'RETORNO': 'RET-4401', 'SKU': 'ELEC-442', 'MOTIVO': 'Aparato no enciende', 'DICTAMEN': 'Rechazado (Garantía Dañada)'},
+
 
 
 

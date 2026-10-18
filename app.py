@@ -41,10 +41,10 @@ opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", 
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# 3. CONEXIONES DIRECTAS POR GID MAPEADAS DESDE LA CABECERA PRINCIPAL
+# URL Base para la extracción CSV de Google Sheets
 URL_BASE = "https://google.com"
 
-# 4. MÓDULOS DE NAVEGACIÓN TOTALMENTE SEPARADOS EN ESTRUCTURA PLANA NATIVA
+# 3. MÓDULOS DE NAVEGACIÓN COMPLETAMENTE INDEPENDIENTES CON CAÍDAS LIMPIAS DE SEGURIDAD
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
@@ -60,7 +60,7 @@ if opcion == "🏠 Dashboard Principal":
     chart_data = pd.DataFrame({
         'Indicador': ['Fill Rate', 'Picking', 'Packing', 'OTIF Ruteo'],
         'Progreso Real': [33.33, 85.00, 2.00, 94.20],
-        'Meta Objetivo': [95.00, 98.00, 0.00, 98.00]
+        'Meta Objetivo': [95.00, 98.00, 0.00, 95.00]
     }).set_index('Indicador')
     st.bar_chart(chart_data, use_container_width=True)
     
@@ -104,19 +104,15 @@ elif opcion == "🚜 Agente 2: Picking":
     st.success("✅ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
     st.markdown("<br><h3>📋 Instrucciones de Recolección Secuencial</h3>", unsafe_allow_html=True)
     
-    # Intentamos leer la pestaña de Picking de producción (537805708)
     try:
         df_p = pd.read_csv(f"{URL_BASE}537805708", encoding='utf-8')
         df_p.columns = df_p.columns.str.strip().str.upper()
-        # Buscamos de forma flexible las columnas
-        c_p = [c for c in df_p.columns if 'PASILLO' in c or 'ZONA' in c][0]
-        c_e = [c for c in df_p.columns if 'ESTANTER' in c or 'NIVEL' in c][0]
-        df_opt = df_p.sort_values(by=[c_p, c_e]).reset_index(drop=True)
-        
-        for idx, row in df_opt.head(10).iterrows():
-            st.info(f"📍 PASO {idx+1}: Ir a {row[c_p]} → {row[c_e]} | Artículo: {row.get('ARTÍCULO', row.get('ARTICULO', 'Producto'))} | Cantidad: {row.get('CANTIDAD', 0)} uds | Pedido: {row.get('PEDIDO', 'N/A')}")
+        if not df_p.empty:
+            for idx, row in df_p.head(10).iterrows():
+                st.info(f"📍 PASO {idx+1} — Ubicación: {row.get('PASILLO', 'N/A')} | Altura: {row.get('ESTANTERÍA', row.get('ESTANTERIA', 'N/A'))} | Cantidad: {row.get('CANTIDAD', 0)} uds | Pedido: {row.get('PEDIDO', 'N/A')}")
+        else:
+            st.error("Hoja de picking sin registros.")
     except Exception:
-        # Caída limpia nativa obligatoria libre de tablas indescifrables
         st.info("📍 PASO 1: Ir a Pasillo A → Nivel 1 | Recoger: 15 unidades de Bujías (Pedido #1025)")
         st.info("📍 PASO 2: Ir a Pasillo B → Nivel 3 | Recoger: 10 unidades de Filtros (Pedido #1024)")
 
@@ -128,21 +124,27 @@ elif opcion == "⚖️ Agente 3: Packing":
     st.warning("🔍 Auditoría de Báscula: Se detectaron variaciones de peso. Validar bultos marcados antes del flejado final.")
     st.markdown("<br><h3>📋 Instrucciones de Auditoría de Pesaje</h3>", unsafe_allow_html=True)
     
-    # Intentamos leer la pestaña de Packing de producción (822850707)
     try:
         df_pk = pd.read_csv(f"{URL_BASE}822850707", encoding='utf-8')
         df_pk.columns = df_pk.columns.str.strip().str.upper()
-        c_ped = [c for c in df_pk.columns if 'PEDIDO' in c or 'ORDEN' in c][0]
-        
-        for idx, row in df_pk.head(10).iterrows():
-            alerta = str(row.get('ESTAR ALERTA', row.get('ESTADO', 'OK'))).upper()
-            msg = f"⚖️ Pedido {row[c_ped]} | Teórico: {row.get('PESO TEÓRICO (KG)', 0)} kg | Báscula: {row.get('PESO BÁSCULA (KG)', 0)} kg | Desvío: {row.get('DESVÍO (KG)', 0)} kg"
-            if "ALERTA" in alerta or "EXCESO" in alerta:
-                st.error(f"❌ REVISAR: {msg}")
-            else:
-                st.success(f"✅ CONTROLADO: {msg}")
+        if not df_pk.empty:
+            for idx, row in df_pk.head(10).iterrows():
+                alerta = str(row.get('ESTAR ALERTA', row.get('ESTADO', 'OK'))).upper()
+                msg_txt = f"Pedido {row.get('PEDIDO','N/A')} | Teórico: {row.get('PESO TEÓRICO (KG)', 0)} kg | Báscula: {row.get('PESO BÁSCULA (KG)', 0)} kg"
+                if "ALERTA" in alerta or "EXCESO" in alerta:
+                    st.error(f"❌ REVISAR: {msg_txt}")
+                else:
+                    st.success(f"✅ OK: {msg_txt}")
+        else:
+            st.error("Hoja de packing sin registros.")
     except Exception:
-        # Caída limpia nativa obligatoria libre de tablas indescifrables
+        st.success("✅ COMPLETO: Pedido #1024 (Distribuidora A) | Desvío: 0.02 kg (Dentro de margen)")
+        st.error("❌ REVISAR CONTENIDO: Pedido #1025 (Logística B) | Desvío: +0.25 kg (EXCESO DETECTADO)")
+
+elif opcion == "🔄 Agente 4: Devoluciones":
+    st.markdown("<h1>🔄 Agente 4 - Logística Inversa (Devoluciones)</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Clasificación automática de mercancía retornada y motivos de rechazo</p>", unsafe_allow_html=True)
+
 
 
 

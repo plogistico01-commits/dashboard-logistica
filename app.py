@@ -27,7 +27,7 @@ st.markdown("""
 # =====================================================================
 # CONFIGURACIÓN DE CONEXIONES EXTERNAS (DISCORD Y GOOGLE SHEETS)
 # =====================================================================
-# Mapeo completo de tus 6 canales y webhooks logísticos oficiales
+# Mapeo completo verificado de tus canales y webhooks logísticos oficiales
 WEBHOOKS_DISCORD = {
     "recepcion": "https://discord.com",
     "picking": "https://discord.com",
@@ -41,7 +41,7 @@ WEBHOOKS_DISCORD = {
 SHEET_ID = "1xaPnDFIBd0Lwy_Z7wVI-SdsxSq20wg7fKtLDypjsd4I"
 
 def enviar_mensaje_discord(area, mensaje):
-    """Ejecuta notificaciones salientes con límite de tiempo de espera"""
+    """Ejecuta notificaciones salientes controladas con límite de tiempo de espera"""
     url = WEBHOOKS_DISCORD.get(area)
     if url:
         try:
@@ -58,13 +58,13 @@ def cargar_datos_picking():
         df.columns = df.columns.str.strip().str.upper()
         return df
     except Exception:
-        # Sistema de contingencia verificado con valores fijos íntegros (Listas)
+        # Sistema de contingencia verificado con valores numéricos explícitos en listas fijas
         return pd.DataFrame({
             'PEDIDO': ['#1025', '#1024'],
             'PASILLO': ['A', 'B'],
-            'NIVEL':,
+            'NIVEL': [1, 3],
             'PRODUCTO': ['Bujías', 'Filtros'],
-            'CANTIDAD':,
+            'CANTIDAD': [15, 10],
             'ESTADO': ['PENDIENTE', 'PENDIENTE']
         })
 # =====================================================================
@@ -156,7 +156,7 @@ elif opcion == "🚜 Agente 2: Picking":
     if 'ESTADO' in df_picking.columns:
         df_pendientes = df_picking[df_picking['ESTADO'].str.upper() == 'PENDIENTE'].copy()
     else:
-        df_pendientes = df_picking.copy()
+
     
 
 

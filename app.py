@@ -37,10 +37,10 @@ def extraer_datos_logistica(gid, columnas_verificar, fallback_data):
     try:
         df = pd.read_csv(url)
         if df.empty or not all(c in df.columns for c in columnas_verificar):
-            return pd.DataFrame(fallback_data), True
-        return df, False
+            return pd.DataFrame(fallback_data), "si"
+        return df, "no"
     except Exception:
-        return pd.DataFrame(fallback_data), True
+        return pd.DataFrame(fallback_data), "si"
 
 # Barra Lateral (Sidebar) Corporativo
 st.sidebar.markdown("""
@@ -131,8 +131,9 @@ elif opcion == "🚜 Agente 2: Picking":
         {'OPERARIO': 'Elena Rostova', 'ZONA': 'Pasillo D (High-Bay)', 'ARTICULOS': 110, 'ESTADO': 'Pendiente'},
         {'OPERARIO': 'Juan Alarcón', 'ZONA': 'Pasillo B (Mezzanine)', 'ARTICULOS': 45, 'ESTADO': 'Completado'}
     ]
-    df_picking, es_contingencia = extraer_datos_logistica(GID_PICKING, ['OPERARIO'], fallback_p)
-    if es_contingencia:
+    df_picking, contingencia = extraer_datos_logistica(GID_PICKING, ['OPERARIO'], fallback_p)
+    
+    if contingencia == "si":
         st.warning("⚠️ Modo de Contingencia Activo: No se detectaron datos en tiempo real en la nube.")
         
     for idx, row in df_picking.iterrows():
@@ -147,11 +148,12 @@ elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Validación física de empaque mediante báscula automatizada de fin de línea</p>", unsafe_allow_html=True)
     
     fallback_pa = [
-        {'PEDIDO': 'ORD-9921', 'PESO_TEORICO': 4.50, 'PESO_REAL': 4.51, 'STATUS': 'OK'},
-        {'PEDIDO': 'ORD-9922', 'PESO_TEORICO': 12.80, 'PESO_REAL': 13.45, 'STATUS': 'ALERTA'}
+        {'PEDIDO': 'ORD-9921', 'PESO_TEORICO': 4.50, 'PESO_REAL': 4.51},
+        {'PEDIDO': 'ORD-9922', 'PESO_TEORICO': 12.80, 'PESO_REAL': 13.45}
     ]
-    df_packing, es_contingencia = extraer_datos_logistica(GID_PACKING, ['PEDIDO'], fallback_pa)
-    if es_contingencia:
+    df_packing, contingencia = extraer_datos_logistica(GID_PACKING, ['PEDIDO'], fallback_pa)
+    
+    if contingencia == "si":
         st.warning("⚠️ Modo de Contingencia Activo: No se detectaron registros de báscula en la nube.")
         
     for idx, row in df_packing.iterrows():

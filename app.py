@@ -4,7 +4,7 @@ import pandas as pd
 # Configuración de página limpia y robusta
 st.set_page_config(page_title="Proyecto Logístico - Dashboard", layout="wide", initial_sidebar_state="expanded")
 
-# Inyección de Estilos Corporativos Premium
+# Inyección de Estilos únicamente para el Dashboard Principal (Estructura fija controlada)
 st.markdown("""
     <style>
         .stApp { background-color: #F3F4F6 !important; }
@@ -21,10 +21,6 @@ st.markdown("""
         .status-revision { background-color: #FFF7ED; border-color: #F97316; color: #9A3412; }
         .status-optimo { background-color: #F0FDF4; border-color: #22C55E; color: #166534; }
         .status-controlado { background-color: #F0F9FF; border-color: #0EA5E9; color: #075985; }
-        .action-card { background-color: #FFFFFF; padding: 15px 20px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-left: 6px solid; }
-        .border-picking { border-color: #1E3A8A; }
-        .border-packing-ok { border-color: #22C55E; }
-        .border-packing-alerta { border-color: #EF4444; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -141,14 +137,7 @@ elif opcion == "🚜 Agente 2: Picking":
             articulos = row.get('ARTICULOS', 0)
             estado = row.get('ESTADO', 'Pendiente')
             
-            st.markdown(f"""
-                <div class="action-card border-picking">
-                    <h3 style="margin: 0; color: #1E3A8A; font-size: 16px;">📋 Tarea de Picking #{idx + 1} — Operario: {operario}</h3>
-                    <p style="margin: 5px 0 0 0; color: #4B5563; font-size: 14px;">
-                        <strong>Zona de Ruta:</strong> {zona} | <strong>Artículos a Recoger:</strong> {articulos} unidades | <strong>Estatus:</strong> {estado}
-                    </p>
-                </div>
-            """, unsafe_allow_html=True)
+            st.info(f"📋 Tarea #{idx + 1} — Operario: {operario} | Zona: {zona} | Artículos: {articulos} | Estado: {estado}")
     else:
         st.warning("⚠️ Modo de Contingencia Activo: No se detectaron datos en tiempo real en la nube.")
         contingencia_picking = [
@@ -157,11 +146,31 @@ elif opcion == "🚜 Agente 2: Picking":
             {'OPERARIO': 'Juan Alarcón', 'ZONA': 'Pasillo B (Mezzanine)', 'ARTICULOS': 45, 'ESTADO': 'Completado'}
         ]
         for idx, tarea in enumerate(contingencia_picking):
-            st.markdown(f"""
-                <div class="action-card border-picking">
-                    <h3 style="margin: 0; color: #1E3A8A; font-size: 16px;">📋 Tarea de Picking #{idx + 1} (Contingencia) — Operario: {tarea['OPERARIO']}</h3>
-                    <p style="margin: 5px 0 0 0; color: #4B5563; font-size: 14px;">
-                        <strong>Zona de Ruta:</strong> {tarea['ZONA']} | <strong>Artículos a Recoger:</strong> {tarea['ARTICULOS']} un. | <strong>Estatus:</strong> {tarea['ESTADO']}
+            st.info(f"📋 Tarea #{idx + 1} (Contingencia) — Operario: {tarea['OPERARIO']} | Zona: {tarea['ZONA']} | Artículos: {tarea['ARTICULOS']} | Estado: {tarea['ESTADO']}")
+
+elif opcion == "⚖️ Agente 3: Packing":
+    st.markdown("<h1>Agente 3: Control de Peso en Packing</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Validación física de empaque mediante báscula automatizada de fin de línea</p>", unsafe_allow_html=True)
+    
+    url_packing = f"https://google.com{SHEET_ID}/export?format=csv&gid={GID_PACKING}"
+    datos_validos = False
+    
+    try:
+        df_packing = pd.read_csv(url_packing)
+        if not df_packing.empty and 'PEDIDO' in df_packing.columns:
+            datos_validos = True
+    except Exception:
+        datos_validos = False
+
+    if datos_validos:
+        for idx, row in df_packing.iterrows():
+            pedido = row.get('PEDIDO', 'N/A')
+            peso_teo = row.get('PESO_TEORICO', 0.0)
+            peso_real = row.get('PESO_REAL', 0.0)
+            desvio = abs(peso_real - peso_teo)
+            
+            if desvio <= 0.05:
+
 
 
 

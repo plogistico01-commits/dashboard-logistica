@@ -112,7 +112,7 @@ elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<h1>Agente 2: Planificación de Picking</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Rutas optimizadas y órdenes asignadas a los operarios en almacén</p>", unsafe_allow_html=True)
     
-    url_picking = f"https://google.com{SHEET_ID}/export?format=csv&gid={GID_PICKING}"
+    url_picking = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID_PICKING}"
     try:
         df_picking = pd.read_csv(url_picking)
         if df_picking.empty or 'OPERARIO' not in df_picking.columns:
@@ -131,7 +131,7 @@ elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<h1>Agente 3: Control de Peso en Packing</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Validación física de empaque mediante báscula automatizada de fin de línea</p>", unsafe_allow_html=True)
     
-    url_packing = f"https://google.com{SHEET_ID}/export?format=csv&gid={GID_PACKING}"
+    url_packing = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID_PACKING}"
     try:
         df_packing = pd.read_csv(url_packing)
         if df_packing.empty or 'PEDIDO' not in df_packing.columns:
@@ -155,9 +155,10 @@ elif opcion == "🔄 Agente 4: Devoluciones":
     st.markdown("<h1>Agente 4: Logística Inversa y Devoluciones</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Clasificación de productos devueltos, motivos y estado de inspección en almacén</p>", unsafe_allow_html=True)
     
-    url_devoluciones = f"https://google.com{SHEET_ID}/export?format=csv&gid={GID_DEVOLUCIONES}"
+    url_devoluciones = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID_DEVOLUCIONES}"
     try:
         df_devoluciones = pd.read_csv(url_devoluciones)
+
 
 
 

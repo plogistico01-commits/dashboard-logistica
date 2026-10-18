@@ -27,7 +27,7 @@ st.markdown("""
 # =====================================================================
 # CONFIGURACIÓN DE CONEXIONES EXTERNAS (DISCORD Y GOOGLE SHEETS)
 # =====================================================================
-# Repositorio maestro indexado de tus Webhooks oficiales corporativos
+# Mapeo completo de tus 6 canales y webhooks logísticos oficiales
 WEBHOOKS_DISCORD = {
     "recepcion": "https://discord.com",
     "picking": "https://discord.com",
@@ -37,11 +37,11 @@ WEBHOOKS_DISCORD = {
     "dashboard": "https://discord.com"
 }
 
-# ID único de tu Google Sheets centralizador
+# ID único de tu archivo central de Google Sheets
 SHEET_ID = "1xaPnDFIBd0Lwy_Z7wVI-SdsxSq20wg7fKtLDypjsd4I"
 
 def enviar_mensaje_discord(area, mensaje):
-    """Ejecuta llamadas salientes asíncronas protegiendo el render del dashboard"""
+    """Ejecuta notificaciones salientes con límite de tiempo de espera"""
     url = WEBHOOKS_DISCORD.get(area)
     if url:
         try:
@@ -50,7 +50,7 @@ def enviar_mensaje_discord(area, mensaje):
             pass
 
 def cargar_datos_picking():
-    """Descarga de datos de la pestaña Picking con contingencia local activa"""
+    """Descarga de datos de la pestaña Picking desde Google Sheets con contingencia total"""
     gid_picking = "537805708"
     url_csv = f"https://google.com{SHEET_ID}/export?format=csv&gid={gid_picking}"
     try:
@@ -58,7 +58,7 @@ def cargar_datos_picking():
         df.columns = df.columns.str.strip().str.upper()
         return df
     except Exception:
-        # Respaldo automático corregido anti-caídas si falla la red o Google Sheets
+        # Sistema de contingencia verificado con valores fijos íntegros (Listas)
         return pd.DataFrame({
             'PEDIDO': ['#1025', '#1024'],
             'PASILLO': ['A', 'B'],
@@ -158,6 +158,7 @@ elif opcion == "🚜 Agente 2: Picking":
     else:
         df_pendientes = df_picking.copy()
     
+
 
     
 

@@ -163,7 +163,6 @@ elif opcion == "⚖️ Agente 3: Packing":
             peso_teo = row.get('PESO_TEORICO', 0.0)
             peso_real = row.get('PESO_REAL', 0.0)
             desvio = abs(peso_real - peso_teo)
-            
             if desvio <= 0.05:
                 st.success(f"✅ Pedido #{pedido} — Peso Exacto | Teórico: {peso_teo} kg | Real: {peso_real} kg | Dif: {desvio:.2f} kg")
             else:

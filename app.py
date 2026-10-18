@@ -15,21 +15,11 @@ st.markdown("""
         div[data-testid="stMetricLabel"] > div { color: #4B5563 !important; font-weight: 600 !important; font-size: 14px !important; }
         div[data-testid="stMetricValue"] > div { color: #111827 !important; font-weight: 700 !important; font-size: 28px !important; }
         h1, h2, h3 { color: #1F2937 !important; font-family: 'Inter', sans-serif !important; }
-        
-        /* Semáforos Corporativos Premium */
         .status-card { padding: 15px 20px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; border-left: 6px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
         .status-critico { background-color: #FEF2F2; border-color: #EF4444; color: #991B1B; }
         .status-revision { background-color: #FFF7ED; border-color: #F97316; color: #9A3412; }
         .status-optimo { background-color: #F0FDF4; border-color: #22C55E; color: #166534; }
         .status-controlado { background-color: #F0F9FF; border-color: #0EA5E9; color: #075985; }
-        
-        /* Tarjetas de Acción de Operarios */
-        .action-card { background-color: #FFFFFF; padding: 15px 20px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-left: 6px solid; }
-        .border-picking { border-color: #1E3A8A; }
-        .border-packing-ok { border-color: #22C55E; }
-        .border-packing-alerta { border-color: #EF4444; }
-        .border-devoluciones { border-color: #F97316; }
-        .border-despacho { border-color: #0EA5E9; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -49,7 +39,7 @@ opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", 
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# 3. MÓDULOS DE NAVEGACIÓN COMPLETAMENTE INDEPENDIENTES Y FLEXIBLES
+# 3. MÓDULOS DE NAVEGACIÓN EN FORMATO PLANO Y SEGURO
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
@@ -113,30 +103,44 @@ elif opcion == "🚜 Agente 2: Picking":
     try:
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
-        
-        # Mapeo flexible e inteligente de nombres de columna
-        c_pasillo = [col for col in df_picking.columns if 'PASILLO' in col][0] if any('PASILLO' in col for col in df_picking.columns) else None
-        c_estanteria = [col for col in df_picking.columns if 'ESTANTER' in col or 'NIVEL' in col][0] if any('ESTANTER' in col or 'NIVEL' in col for col in df_picking.columns) else None
-        
-        if c_pasillo and c_estanteria and not df_picking.empty:
-            df_optimizado = df_picking.sort_values(by=[c_pasillo, c_estanteria]).reset_index(drop=True)
+        if not df_picking.empty:
+            df_optimizado = df_picking.sort_values(by=list(df_picking.columns[:2])).reset_index(drop=True)
             for idx, row in df_optimizado.iterrows():
-                p_id = row.get('PEDIDO', row.get('ORDEN', row.get('ID', 'N/A')))
-                p_art = row.get('ARTÍCULO', row.get('ARTICULO', row.get('PRODUCTO', 'Componente')))
-                p_cant = row.get('CANTIDAD', row.get('CANT', 0))
-                st.markdown(f'<div class="action-card border-picking"><span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO {idx+1}: Ir a {row[c_pasillo]} → {row[c_estanteria]}</span><br><span style="color:#4B5563;">Recoger: <strong>{p_cant} uds</strong> de <u>{p_art}</u> | Pedido: <strong>{p_id}</strong></span></div>', unsafe_allow_html=True)
+                st.info(f"📍 PASO {idx+1}: Moverse por el almacén | Registro ID: {row.iloc[0]}")
         else:
-            raise ValueError
+            st.error("Hoja de cálculo en blanco.")
     except Exception:
-        st.markdown("""
-            <div class="action-card border-picking">
-                <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 1: Ir a Pasillo A → Nivel 1</span><br>
-                <span style="color:#4B5563;">Recoger: <strong>15 unidades</strong> de <u>Bujías</u> | Pedido: <strong>#1025</strong></span>
-            </div>
-            <div class="action-card border-picking">
-                <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 2: Ir a Pasillo B → Nivel 3</span><br>
-                <span style="color:#4B5563;">Recoger: <strong>10 unidades</strong> de <u>Filtros</u> | Pedido: <strong>#1024</strong></span>
-            </div>
+        st.info("📍 PASO 1: Ir a Pasillo A → Nivel 1 | Recoger: 15 unidades de Bujías (Pedido #1025)")
+        st.info("📍 PASO 2: Ir a Pasillo B → Nivel 3 | Recoger: 10 unidades de Filtros (Pedido #1024)")
+
+elif opcion == "⚖️ Agente 3: Packing":
+    st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Auditoría automatizada de tolerancia de peso por bulto despachado</p>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.metric(label="Desvío Promedio General", value="2.00%", delta="+2.00% Tolerancia Máxima")
+    st.warning("🔍 Auditoría de Báscula: Se detectaron variaciones de peso. Validar bultos marcados antes del flejado final.")
+    st.markdown("<br><h3>📋 Instrucciones de Auditoría de Pesaje</h3>", unsafe_allow_html=True)
+    
+    URL_PACKING = "https://google.com"
+    try:
+        df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
+        df_packing.columns = df_packing.columns.str.strip().str.upper()
+        if not df_packing.empty:
+            for idx, row in df_packing.iterrows():
+                st.warning(f"⚖️ Bulto en Auditoría | ID Registro: {row.iloc[0]}")
+        else:
+            st.error("Hoja de cálculo sin registros.")
+    except Exception:
+        st.success("✅ COMPLETO: Pedido #1024 (Distribuidora A) | Desvío: 0.02 kg (Dentro de margen)")
+        st.error("❌ REVISAR CONTENIDO: Pedido #1025 (Logística B) | Desvío: +0.25 kg (EXCESO DETECTADO)")
+
+elif opcion == "🔄 Agente 4: Devoluciones":
+    st.markdown("<h1>🔄 Agente 4 - Logística Inversa (Devoluciones)</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Clasificación automática de mercancía retornada y motivos de rechazo</p>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.metric(label="Eficiencia de Logística Inversa", value="91.00%", delta="-4.00% vs Objetivo (95%)")
+    st.warning("🔄 Auditoría de Retornos: Revisar las prioridades de reingreso a stock para evitar obsolescencia de componentes.")
+
 
 
 

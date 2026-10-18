@@ -121,22 +121,19 @@ elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Rutas optimizadas y órdenes asignadas a los operarios en almacén</p>", unsafe_allow_html=True)
     
     url_picking = f"https://google.com{SHEET_ID}/export?format=csv&gid={GID_PICKING}"
-    datos_validos = False
+    df_picking = pd.DataFrame()
     
     try:
         df_picking = pd.read_csv(url_picking)
-        if not df_picking.empty and 'OPERARIO' in df_picking.columns:
-            datos_validos = True
     except Exception:
-        datos_validos = False
+        df_picking = pd.DataFrame()
 
-    if datos_validos:
+    if not df_picking.empty and 'OPERARIO' in df_picking.columns:
         for idx, row in df_picking.iterrows():
             operario = row.get('OPERARIO', 'No Asignado')
             zona = row.get('ZONA', 'General')
             articulos = row.get('ARTICULOS', 0)
             estado = row.get('ESTADO', 'Pendiente')
-            
             st.info(f"📋 Tarea #{idx + 1} — Operario: {operario} | Zona: {zona} | Artículos: {articulos} | Estado: {estado}")
     else:
         st.warning("⚠️ Modo de Contingencia Activo: No se detectaron datos en tiempo real en la nube.")
@@ -153,16 +150,14 @@ elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Validación física de empaque mediante báscula automatizada de fin de línea</p>", unsafe_allow_html=True)
     
     url_packing = f"https://google.com{SHEET_ID}/export?format=csv&gid={GID_PACKING}"
-    datos_validos = False
+    df_packing = pd.DataFrame()
     
     try:
         df_packing = pd.read_csv(url_packing)
-        if not df_packing.empty and 'PEDIDO' in df_packing.columns:
-            datos_validos = True
     except Exception:
-        datos_validos = False
+        df_packing = pd.DataFrame()
 
-    if datos_validos:
+    if not df_packing.empty and 'PEDIDO' in df_packing.columns:
         for idx, row in df_packing.iterrows():
             pedido = row.get('PEDIDO', 'N/A')
             peso_teo = row.get('PESO_TEORICO', 0.0)
@@ -170,6 +165,9 @@ elif opcion == "⚖️ Agente 3: Packing":
             desvio = abs(peso_real - peso_teo)
             
             if desvio <= 0.05:
+                st.success(f"✅ Pedido #{pedido} — Peso Exacto | Teórico: {peso_teo} kg | Real: {peso_real} kg | Dif: {desvio:.2f} kg")
+            else:
+
 
 
 

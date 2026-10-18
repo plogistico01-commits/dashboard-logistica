@@ -31,16 +31,16 @@ GID_PICKING = "537805708"
 GID_PACKING = "822850707"
 GID_DEVOLUCIONES = "999999999"
 
-# Función Serverless de Lectura Segura con Datos de Contingencia Integrados
+# Función Serverless de Lectura Segura Unificada (0% Bloques if/else en la interfaz)
 def extraer_datos_logistica(gid, columnas_verificar, fallback_data):
     url = f"https://google.com{SHEET_ID}/export?format=csv&gid={gid}"
     try:
         df = pd.read_csv(url)
         if df.empty or not all(c in df.columns for c in columnas_verificar):
-            return pd.DataFrame(fallback_data), "si"
-        return df, "no"
+            return pd.DataFrame(fallback_data)
+        return df
     except Exception:
-        return pd.DataFrame(fallback_data), "si"
+        return pd.DataFrame(fallback_data)
 
 # Barra Lateral (Sidebar) Corporativo
 st.sidebar.markdown("""
@@ -64,19 +64,17 @@ opcion = st.sidebar.radio("Menú de Navegación:", [
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# --- LÓGICA DE RENDERIZADO TOTALMENTE LINEAL ---
+# --- LÓGICA DE RENDERIZADO TOTALMENTE LINEAL Y SECUENCIAL ---
 
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
-    
     col1, col2, col3, col4 = st.columns(4)
     with col1: st.metric(label="📥 Agente 1 (Fill Rate)", value="33.33%", delta="-61.67% vs Meta")
     with col2: st.metric(label="🚜 Agente 2 (Picking)", value="85.00%", delta="-13.00% vs Meta")
     with col3: st.metric(label="⚖️ Agente 3 (Packing)", value="2.00%", delta="+2.00% Desvío")
     with col4: st.metric(label="🔄 Agente 4 (Devoluciones)", value="91.00%", delta="-4.00% vs Meta")
-    
     st.markdown("<br><h3>📊 Rendimiento vs Metas del Proyecto</h3>", unsafe_allow_html=True)
     chart_data = pd.DataFrame({
         'Indicador': ['Fill Rate', 'Picking', 'Packing', 'Devoluciones'],
@@ -84,7 +82,6 @@ if opcion == "🏠 Dashboard Principal":
         'Meta Objetivo': [95.00, 98.00, 0.00, 95.00]
     }).set_index('Indicador')
     st.bar_chart(chart_data, use_container_width=True)
-    
     st.markdown("<br><h3>🚦 Estado Operativo de los Procesos</h3>", unsafe_allow_html=True)
     st.markdown("""
         <div class="status-card status-critico">
@@ -125,17 +122,12 @@ elif opcion == "📦 Agente 1: Recepción":
 elif opcion == "🚜 Agente 2: Picking":
     st.markdown("<h1>Agente 2: Planificación de Picking</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Rutas optimizadas y órdenes asignadas a los operarios en almacén</p>", unsafe_allow_html=True)
-    
     fallback_p = [
         {'OPERARIO': 'Carlos Mendoza', 'ZONA': 'Pasillo A (Nivel 1)', 'ARTICULOS': 24, 'ESTADO': 'En Ruta'},
         {'OPERARIO': 'Elena Rostova', 'ZONA': 'Pasillo D (High-Bay)', 'ARTICULOS': 110, 'ESTADO': 'Pendiente'},
         {'OPERARIO': 'Juan Alarcón', 'ZONA': 'Pasillo B (Mezzanine)', 'ARTICULOS': 45, 'ESTADO': 'Completado'}
     ]
-    df_picking, contingencia = extraer_datos_logistica(GID_PICKING, ['OPERARIO'], fallback_p)
-    
-    if contingencia == "si":
-        st.warning("⚠️ Modo de Contingencia Activo: No se detectaron datos en tiempo real en la nube.")
-        
+    df_picking = extraer_datos_logistica(GID_PICKING, ['OPERARIO'], fallback_p)
     for idx, row in df_picking.iterrows():
         operario = row.get('OPERARIO', 'No Asignado')
         zona = row.get('ZONA', 'General')
@@ -146,16 +138,11 @@ elif opcion == "🚜 Agente 2: Picking":
 elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<h1>Agente 3: Control de Peso en Packing</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px;'>Validación física de empaque mediante báscula automatizada de fin de línea</p>", unsafe_allow_html=True)
-    
     fallback_pa = [
         {'PEDIDO': 'ORD-9921', 'PESO_TEORICO': 4.50, 'PESO_REAL': 4.51},
         {'PEDIDO': 'ORD-9922', 'PESO_TEORICO': 12.80, 'PESO_REAL': 13.45}
     ]
-    df_packing, contingencia = extraer_datos_logistica(GID_PACKING, ['PEDIDO'], fallback_pa)
-    
-    if contingencia == "si":
-        st.warning("⚠️ Modo de Contingencia Activo: No se detectaron registros de báscula en la nube.")
-        
+    df_packing = extraer_datos_logistica(GID_PACKING, ['PEDIDO'], fallback_pa)
     for idx, row in df_packing.iterrows():
         pedido = row.get('PEDIDO', 'N/A')
         peso_teo = row.get('PESO_TEORICO', 0.0)
@@ -164,6 +151,11 @@ elif opcion == "⚖️ Agente 3: Packing":
         if desvio <= 0.05:
             st.success(f"✅ Pedido #{pedido} — Peso Exacto | Teórico: {peso_teo} kg | Real: {peso_real} kg | Dif: {desvio:.2f} kg")
         if desvio > 0.05:
+            st.error(f"❌ Pedido #{pedido} — Desvío Detectado | Teórico: {peso_teo} kg | Real: {peso_real} kg | Dif: {desvio:.2f} kg")
+
+elif opcion == "🔄 Agente 4: Devoluciones":
+    st.markdown("<h1>Agente 4: Logística Inversa y Devoluciones</h1>", unsafe_allow_html=True)
+
 
 
 

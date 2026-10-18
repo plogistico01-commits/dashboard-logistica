@@ -33,8 +33,8 @@ WEBHOOKS_DISCORD = {
     "picking": "https://discord.com",
     "packing": "https://discord.com",
     "devoluciones": "https://discord.com",
-    "ruteo": "https://discord.com/api/webhooks/1560772280135581837/w_Wp-469VbaWZqQ6ezLsPZpYhQdR0GHsH6q-Jy0hFcstgfgyPExVXABnxrMSdRp8G71k",
-    "dashboard": "https://discord.com/api/webhooks/1560773518923403285/5SfoGswrLPYT2Jo6prSbKQ9pOSi53A7p7sBoCw5MAfq3LI1DwcQUeAztzNI2aS39GX-4"
+    "ruteo": "https://discord.com",
+    "dashboard": "https://discord.com"
 }
 
 # ID único de tu Google Sheets centralizador
@@ -58,7 +58,7 @@ def cargar_datos_picking():
         df.columns = df.columns.str.strip().str.upper()
         return df
     except Exception:
-        # Respaldo automático anti-caídas si falla la red o Google Sheets
+        # Respaldo automático corregido anti-caídas si falla la red o Google Sheets
         return pd.DataFrame({
             'PEDIDO': ['#1025', '#1024'],
             'PASILLO': ['A', 'B'],
@@ -157,6 +157,8 @@ elif opcion == "🚜 Agente 2: Picking":
         df_pendientes = df_picking[df_picking['ESTADO'].str.upper() == 'PENDIENTE'].copy()
     else:
         df_pendientes = df_picking.copy()
+    
+
     
 
 

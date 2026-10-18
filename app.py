@@ -25,7 +25,6 @@ st.markdown("""
         .border-picking { border-color: #1E3A8A; }
         .border-packing-ok { border-color: #22C55E; }
         .border-packing-alerta { border-color: #EF4444; }
-        .border-devoluciones { border-color: #F97316; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -34,7 +33,7 @@ SHEET_ID = "1xaPnDFIBd0Lwy_Z7wVI-SdsxSq20wg7fKtLDypjsd4I"
 GID_DASHBOARD = "1440866900"
 GID_PICKING = "537805708"
 GID_PACKING = "822850707"
-GID_DEVOLUCIONES = "999999999"  # ID de pestaña asignada para logística inversa
+GID_DEVOLUCIONES = "999999999"
 
 # Barra Lateral (Sidebar) Corporativo
 st.sidebar.markdown("""
@@ -162,6 +161,8 @@ elif opcion == "🚜 Agente 2: Picking":
                 <div class="action-card border-picking">
                     <h3 style="margin: 0; color: #1E3A8A; font-size: 16px;">📋 Tarea de Picking #{idx + 1} (Contingencia) — Operario: {tarea['OPERARIO']}</h3>
                     <p style="margin: 5px 0 0 0; color: #4B5563; font-size: 14px;">
+                        <strong>Zona de Ruta:</strong> {tarea['ZONA']} | <strong>Artículos a Recoger:</strong> {tarea['ARTICULOS']} un. | <strong>Estatus:</strong> {tarea['ESTADO']}
+
 
 
 

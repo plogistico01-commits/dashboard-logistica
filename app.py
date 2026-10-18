@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit st
 import pandas as pd
 
 # 1. CONFIGURACIÓN DE INTERFAZ PREMIUM CORPORATIVA
@@ -121,7 +121,6 @@ elif opcion == "🔄 Agente 4: Devoluciones":
     st.warning("🔄 Auditoría de Retornos: Revisar las prioridades de reingreso a stock para evitar obsolescencia de componentes.")
     st.markdown("<br><h3>📋 Plan de Clasificación e Ingreso a Stock</h3>", unsafe_allow_html=True)
     
-    # FORMATO NATIVO PLANO: Se eliminan condiciones complejas para asegurar despliegue inmediato bajo el título
     st.warning("⚠️ RETORNO EN REVISIÓN: Pedido #1011 (Comercializadora X) | Motivo: Error de despacho | Acción: Inspección visual obligatoria")
     st.success("✅ REINGRESO AUTORIZADO: Pedido #1009 (Taller Central) | Motivo: Garantía de fábrica | Acción: Actualizar stock de inmediato")
 
@@ -133,7 +132,10 @@ elif opcion == "🚛 Agente 5: Despacho (OTIF)":
     st.info("🚛 Monitoreo de Andenes: Transportes consolidados listos. Validar ventanas críticas.")
     st.markdown("<br><h3>📋 Estatus de Bahías y Ventanas Horarias de Despacho</h3>", unsafe_allow_html=True)
     
-    st.info("🔵 BAHÍA 1 (Transporte Norte): Pedido #1040 — Estatus: EN ANDÉN DE CARGA (100% Completo)")
+    URL_DESPACHO = "https://google.com"
+    try:
+        df_desp = pd.read_csv(URL_DESPACHO, encoding='utf-8')
+
 
 
 

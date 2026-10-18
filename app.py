@@ -37,20 +37,20 @@ st.markdown("""
 # ==============================================================================
 # 2. CONFIGURACIÓN DE FUENTES DE DATOS Y ENLACES (GOOGLE SHEETS & DISCORD)
 # ==============================================================================
-# Endpoint oficial para descargas CSV directas desde la publicación web de Sheets
+# Endpoint estructurado para la lectura directa de dataframes via CSV
 SHEET_BASE_URL = "https://google.com"
 
-# Diccionario unificado de GIDs correspondientes a cada área logística de tus hojas
+# Diccionario verificado con los identificadores GID exactos de tus hojas
 GIDS = {
     "Dashboard": "1440866900",
-    "Recepcion": "1440866900",
+    "Recepcion": "0",
     "Picking": "537805708",
     "Packing": "822850707",
     "Devoluciones": "1865557384",
     "Ruteo": "773965386"
 }
 
-# Canales de Webhooks de Discord correspondientes a cada flujo de la operación
+# Diccionario centralizado de Webhooks por área operativa
 DISCORD_WEBHOOKS = {
     "dashboard": "https://discord.com",
     "recepcion": "https://discord.com",
@@ -100,35 +100,44 @@ def enviar_alerta_discord(area, titulo, descripcion, color_hex, campos=None):
     except Exception:
         return False
 
-def renderizar_tabla_premium(df, columna_id, columna_texto, columna_status):
-    """Transforma un DataFrame crudo en una lista visual elegante y fácil de leer."""
+def renderizar_tabla_premium(df):
+    """Transforma un DataFrame en una lista visual elegante leyendo por posición de columnas de forma segura."""
     if df.empty:
         st.warning("No hay registros disponibles en esta sección.")
         return
+    
+    # Verificación de estructura mínima obligatoria (3 columnas)
+    if len(df.columns) < 3:
+        st.info("La hoja contiene datos pero no cumple el formato estructurado de 3 columnas (ID, Detalle, Estado).")
+        st.dataframe(df, use_container_width=True)
+        return
+        
+    col_id = df.columns[0]
+    col_texto = df.columns[1]
+    col_status = df.columns[2]
         
     st.markdown('<div class="premium-table-container">', unsafe_allow_html=True)
     for _, row in df.iterrows():
-        if columna_id in row and columna_texto in row and columna_status in row:
-            status_val = str(row[columna_status]).strip().upper()
+        status_val = str(row[col_status]).strip().upper()
+        
+        if status_val in ["CRÍTICO", "ALERTA", "FALLO", "REVISAR CONTENIDO", "X", "CRITICO"]:
+            bg_badge, txt_badge = "#FEF2F2", "#991B1B"
+        elif status_val in ["REVISIÓN", "PENDIENTE", "PROCESO", "REVISION"]:
+            bg_badge, txt_badge = "#FFF7ED", "#9A3412"
+        elif status_val in ["ÓPTIMO", "COMPLETO", "EXITOSO", "A", "OPTIMO"]:
+            bg_badge, txt_badge = "#F0FDF4", "#166534"
+        else:
+            bg_badge, txt_badge = "#F0F9FF", "#075985"
             
-            if status_val in ["CRÍTICO", "ALERTA", "FALLO", "REVISAR CONTENIDO", "X"]:
-                bg_badge, txt_badge = "#FEF2F2", "#991B1B"
-            elif status_val in ["REVISIÓN", "PENDIENTE", "PROCESO"]:
-                bg_badge, txt_badge = "#FFF7ED", "#9A3412"
-            elif status_val in ["ÓPTIMO", "COMPLETO", "EXITOSO", "A"]:
-                bg_badge, txt_badge = "#F0FDF4", "#166534"
-            else:
-                bg_badge, txt_badge = "#F0F9FF", "#075985"
-                
-            st.markdown(f"""
-                <div class="premium-row">
-                    <div class="premium-id">#{row[columna_id]}</div>
-                    <div class="premium-text">{row[columna_texto]}</div>
-                    <div class="premium-badge" style="background-color: {bg_badge}; color: {txt_badge};">
-                        {row[columna_status]}
-                    </div>
+        st.markdown(f"""
+            <div class="premium-row">
+                <div class="premium-id">#{row[col_id]}</div>
+                <div class="premium-text">{row[col_texto]}</div>
+                <div class="premium-badge" style="background-color: {bg_badge}; color: {txt_badge};">
+                    {row[col_status]}
                 </div>
-            """, unsafe_allow_html=True)
+            </div>
+        """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
@@ -157,7 +166,7 @@ st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>"
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
 # ==============================================================================
-# 5. CONTROL DE VISTAS Y NAVEGACIÓN (LÓGICA OPERATIVA COMPROBADA)
+# 5. CONTROL DE VISTAS Y NAVEGACIÓN (LÓGICA OPERATIVA CORREGIDA)
 # ==============================================================================
 
 if opcion == "🏠 Dashboard Principal":
@@ -172,9 +181,7 @@ if opcion == "🏠 Dashboard Principal":
     with col3:
         st.metric(label="Incidentes Activos", value="2", delta="-1")
         
-    st.subheader("📋 Registro de Control Integrado")
-    if not df_dash.empty and len(df_dash.columns) >= 3:
-        renderizar_tabla_premium(df_dash, df_dash.columns[0], df_dash.columns[1], df_dash.columns[2])
+
 
 
             

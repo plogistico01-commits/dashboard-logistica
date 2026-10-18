@@ -49,7 +49,7 @@ opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", 
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# 3. MÓDULOS DE NAVEGACIÓN TOTALMENTE INDEPENDIENTES (SIN INTERFERENCIAS DE LLAVES O SANGRIAS)
+# 3. MÓDULOS DE NAVEGACIÓN COMPLETAMENTE INDEPENDIENTES Y FLEXIBLES
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
@@ -113,12 +113,20 @@ elif opcion == "🚜 Agente 2: Picking":
     try:
         df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
         df_picking.columns = df_picking.columns.str.strip().str.upper()
-        if not df_picking.empty and 'PASILLO' in df_picking.columns and 'ESTANTERÍA' in df_picking.columns:
-            df_optimizado = df_picking.sort_values(by=['PASILLO', 'ESTANTERÍA']).reset_index(drop=True)
+        
+        # Mapeo flexible e inteligente de nombres de columna
+        c_pasillo = [col for col in df_picking.columns if 'PASILLO' in col][0] if any('PASILLO' in col for col in df_picking.columns) else None
+        c_estanteria = [col for col in df_picking.columns if 'ESTANTER' in col or 'NIVEL' in col][0] if any('ESTANTER' in col or 'NIVEL' in col for col in df_picking.columns) else None
+        
+        if c_pasillo and c_estanteria and not df_picking.empty:
+            df_optimizado = df_picking.sort_values(by=[c_pasillo, c_estanteria]).reset_index(drop=True)
             for idx, row in df_optimizado.iterrows():
-                st.markdown(f'<div class="action-card border-picking"><span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO {idx+1}: Ir a {row.get("PASILLO","N/A")} → {row.get("ESTANTERÍA","N/A")}</span><br><span style="color:#4B5563;">Recoger: <strong>{row.get("CANTIDAD",0)} uds</strong> de <u>{row.get("ARTÍCULO", row.get("ARTICULO", "Producto"))}</u> | Pedido: <strong>{row.get("PEDIDO","N/A")}</strong></span></div>', unsafe_allow_html=True)
+                p_id = row.get('PEDIDO', row.get('ORDEN', row.get('ID', 'N/A')))
+                p_art = row.get('ARTÍCULO', row.get('ARTICULO', row.get('PRODUCTO', 'Componente')))
+                p_cant = row.get('CANTIDAD', row.get('CANT', 0))
+                st.markdown(f'<div class="action-card border-picking"><span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO {idx+1}: Ir a {row[c_pasillo]} → {row[c_estanteria]}</span><br><span style="color:#4B5563;">Recoger: <strong>{p_cant} uds</strong> de <u>{p_art}</u> | Pedido: <strong>{p_id}</strong></span></div>', unsafe_allow_html=True)
         else:
-            st.error("La hoja de cálculo está conectada pero no tiene el formato esperado.")
+            raise ValueError
     except Exception:
         st.markdown("""
             <div class="action-card border-picking">
@@ -129,13 +137,7 @@ elif opcion == "🚜 Agente 2: Picking":
                 <span style="font-weight:700; color:#1E3A8A; font-size:16px;">📍 PASO 2: Ir a Pasillo B → Nivel 3</span><br>
                 <span style="color:#4B5563;">Recoger: <strong>10 unidades</strong> de <u>Filtros</u> | Pedido: <strong>#1024</strong></span>
             </div>
-        """, unsafe_allow_html=True)
 
-elif opcion == "⚖️ Agente 3: Packing":
-    st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Auditoría automatizada de tolerancia de peso por bulto despachado</p>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.metric(label="Desvío Promedio General", value="2.00%", delta="+2.00% Tolerancia Máxima")
 
 
 

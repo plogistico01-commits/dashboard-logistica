@@ -30,15 +30,13 @@ st.markdown("""
 WEBHOOKS_DISCORD = {
     "recepcion": "https://discord.com",
     "picking": "https://discord.com",
-    "packing": "https://discord.com/api/webhooks/1560761272478212197/KX1zWredjPADAQUIDfm-3rbi0Q9QRmpZJWCh-3sTj2NWPUNb0JPp3TCfcrVayts4G6J5",
-    "devoluciones": "https://discord.com/api/webhooks/1560768326286970953/ma2B_qPWWZYiJBqkRAGJ9rAk7UpoAnDJ4gAdTTOBrBWWReZnyikLg7FqL-bnokb9Ks7t",
+    "packing": "https://discord.com",
+    "devoluciones": "https://discord.com",
     "ruteo": "https://discord.com",
     "dashboard": "https://discord.com"
 }
 
-SHEET_ID = "1xaPnDFIBd0Lwy_Z7wVI-SdsxSq20wg7fKtLDypjsd4I"
-
-# GIDs Maestros Integrados de forma fija
+# GIDs Maestros de tu documento de Google Sheets Publicado
 GIDS = {
     "picking": "537805708",
     "packing": "822850707",
@@ -48,7 +46,6 @@ GIDS = {
 }
 
 def enviar_mensaje_discord(area, mensaje):
-    """Ejecuta notificaciones salientes controladas con límite de tiempo de espera"""
     url = WEBHOOKS_DISCORD.get(area)
     if url:
         try:
@@ -57,19 +54,35 @@ def enviar_mensaje_discord(area, mensaje):
             pass
 
 def descargar_pestana_sheets(nombre_pestana):
-    """Función unificada para descargar cualquier pestaña garantizando estabilidad total"""
+    """Descarga datos adaptándose estrictamente al formato de publicación /pubhtml corporativo"""
     gid = GIDS.get(nombre_pestana)
-    url_csv = f"https://google.com{SHEET_ID}/export?format=csv&gid={gid}"
+    # Reestructuración de URL adaptada para enlaces tipo /pubhtml (/d/e/...)
+    url_csv = f"https://google.com{gid}"
     try:
         df = pd.read_csv(url_csv, encoding='utf-8')
         df.columns = df.columns.str.strip().str.upper()
         return df
     except Exception:
-        # Respaldos limpios de contingencia usando tuplas seguras contra fallos del formateador
+        # Respaldos fijos de contingencia para asegurar que la pantalla nunca se quede en blanco
         if nombre_pestana == "picking":
             return pd.DataFrame({
                 'PEDIDO': list(("#1025", "#1024")), 'PASILLO': list(("A", "B")), 'NIVEL': list((1, 3)),
                 'PRODUCTO': list(("Bujías", "Filtros")), 'CANTIDAD': list((15, 10)), 'ESTADO': list(("PENDIENTE", "PENDIENTE"))
+            })
+        elif nombre_pestana == "packing":
+            return pd.DataFrame({
+                'PEDIDO': list(("#1024", "#1025")), 'CLIENTE': list(("Distribuidora A", "Logística Express")), 
+                'PESO_TEORICO': list((12.5, 8.2)), 'PESO_REAL': list((12.52, 8.5)), 'ESTADO': list(("OK", "DESVÍO"))
+            })
+        elif nombre_pestana == "devoluciones":
+            return pd.DataFrame({
+                'TICKET': list(("#D501", "#D502")), 'PRODUCTO': list(("Amortiguador", "Pastillas Freno")), 
+                'MOTIVO': list(("Falla Técnica", "Error Pedido")), 'ESTADO': list(("EN REVISIÓN", "RECHAZADO"))
+            })
+        elif nombre_pestana == "ruteo":
+            return pd.DataFrame({
+                'TRANSPORTE': list(("Unidad 01", "Unidad 02")), 'ZONA': list(("Norte", "Sur")), 
+                'PEDIDOS_ASIGNADOS': list((8, 12)), 'ESTADO_RUTA': list(("EN TRÁNSITO", "COMPLETO"))
             })
         return pd.DataFrame()
 # =====================================================================
@@ -142,20 +155,7 @@ if opcion == "🏠 Dashboard Principal":
 elif opcion == "📦 Agente 1: Recepción":
     st.markdown("<h1>📦 Agente 1 - Recepción (Fill Rate)</h1>", unsafe_allow_html=True)
     st.markdown("---")
-    st.metric(label="Precisión de Recepción Actual", value="33.33%", delta="-61.67% vs Meta")
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.progress(0.33)
-    st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drásticamente por debajo del objetivo del 95.00%.")
-    
-    if st.button("📢 Reportar Alerta Crítica a Discord"):
-        enviar_mensaje_discord("recepcion", "🚨 **ALERTA CRÍTICA EN RECEPCIÓN:** El Fill Rate actual se desplomó al **33.33%**. Se requiere revisión de stock de inmediato.")
-        st.toast("Reporte enviado al canal de Recepción.", icon="📥")
 
-elif opcion == "🚜 Agente 2: Picking":
-    st.markdown("<h1>🚜 Agente 2 - Optimización de Rutas (Picking)</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Filtro de pedidos pendientes clasificados automáticamente por ubicación física</p>", unsafe_allow_html=True)
-    st.markdown("---")
-    
 
     
 

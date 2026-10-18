@@ -23,7 +23,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. SIDEBAR FIJA CORREGIDA
+# 2. SIDEBAR FIJA
 st.sidebar.markdown("""
     <div style='text-align: center; padding: 15px 0;'>
         <div style='background-color: #FFFFFF; width: 75px; height: 75px; border-radius: 50%; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;'>
@@ -35,12 +35,11 @@ st.sidebar.markdown("""
     <hr style='border-color: rgba(255,255,255,0.15); margin-top: 5px;'>
 """, unsafe_allow_html=True)
 
-# Menú de selección con nombres de opciones limpios y estables
 opcion = st.sidebar.radio("Menú de Navegación:", ["🏠 Dashboard Principal", "📦 Agente 1: Recepción", "🚜 Agente 2: Picking", "⚖️ Agente 3: Packing", "🔄 Agente 4: Devoluciones", "🚛 Agente 5: Despacho (OTIF)"])
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
-# 3. MÓDULOS DE NAVEGACIÓN COMPLETAMENTE INDEPENDIENTES
+# 3. MÓDULOS DE NAVEGACIÓN EN FORMATO PLANO Y ULTRA-ESTABLE
 if opcion == "🏠 Dashboard Principal":
     st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
@@ -100,19 +99,8 @@ elif opcion == "🚜 Agente 2: Picking":
     st.success("✅ Ruta Logística Secuencial Activa: Recorrido optimizado pasillo por pasillo para maximizar la velocidad de recolección.")
     st.markdown("<br><h3>📋 Instrucciones de Recolección Secuencial</h3>", unsafe_allow_html=True)
     
-    URL_PICKING = "https://google.com"
-    try:
-        df_picking = pd.read_csv(URL_PICKING, encoding='utf-8')
-        df_picking.columns = df_picking.columns.str.strip().str.upper()
-        if not df_picking.empty:
-            for idx, row in df_picking.head(10).iterrows():
-                st.info(f"📍 PASO {idx+1}: Moverse a ubicación según hoja de ruta en Sheets | Datos: {list(row.values[:3])}")
-        else:
-            st.info("📍 PASO 1: Ir a Pasillo A → Nivel 1 | Recoger: 15 unidades de Bujías (Pedido #1025)")
-            st.info("📍 PASO 2: Ir a Pasillo B → Nivel 3 | Recoger: 10 unidades de Filtros (Pedido #1024)")
-    except Exception:
-        st.info("📍 PASO 1: Ir a Pasillo A → Nivel 1 | Recoger: 15 unidades de Bujías (Pedido #1025)")
-        st.info("📍 PASO 2: Ir a Pasillo B → Nivel 3 | Recoger: 10 unidades de Filtros (Pedido #1024)")
+    st.info("📍 PASO 1: Ir a Pasillo A → Nivel 1 | Recoger: 15 unidades de Bujías (Pedido #1025)")
+    st.info("📍 PASO 2: Ir a Pasillo B → Nivel 3 | Recoger: 10 unidades de Filtros (Pedido #1024)")
 
 elif opcion == "⚖️ Agente 3: Packing":
     st.markdown("<h1>⚖️ Agente 3 - Control de Básculas (Packing)</h1>", unsafe_allow_html=True)
@@ -122,22 +110,31 @@ elif opcion == "⚖️ Agente 3: Packing":
     st.warning("🔍 Auditoría de Báscula: Se detectaron variaciones de peso. Validar bultos marcados antes del flejado final.")
     st.markdown("<br><h3>📋 Instrucciones de Auditoría de Pesaje</h3>", unsafe_allow_html=True)
     
-    URL_PACKING = "https://google.com"
-    try:
-        df_packing = pd.read_csv(URL_PACKING, encoding='utf-8')
-        df_packing.columns = df_packing.columns.str.strip().str.upper()
-        if not df_packing.empty:
-            for idx, row in df_packing.head(10).iterrows():
-                st.warning(f"⚖️ Bulto en Auditoría | Registro: {list(row.values[:4])}")
-        else:
-            st.success("✅ COMPLETO: Pedido #1024 (Distribuidora A) | Desvío: 0.02 kg (Dentro de margen)")
-            st.error("❌ REVISAR CONTENIDO: Pedido #1025 (Logística B) | Desvío: +0.25 kg (EXCESO DETECTADO)")
-    except Exception:
-        st.success("✅ COMPLETO: Pedido #1024 (Distribuidora A) | Desvío: 0.02 kg (Dentro de margen)")
-        st.error("❌ REVISAR CONTENIDO: Pedido #1025 (Logística B) | Desvío: +0.25 kg (EXCESO DETECTADO)")
+    st.success("✅ COMPLETO: Pedido #1024 (Distribuidora A) | Desvío: 0.02 kg (Dentro de margen)")
+    st.error("❌ REVISAR CONTENIDO: Pedido #1025 (Logística B) | Desvío: +0.25 kg (EXCESO DETECTADO)")
 
 elif opcion == "🔄 Agente 4: Devoluciones":
     st.markdown("<h1>🔄 Agente 4 - Logística Inversa (Devoluciones)</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Clasificación automática de mercancía retornada y motivos de rechazo</p>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.metric(label="Eficiencia de Logística Inversa", value="91.00%", delta="-4.00% vs Objetivo (95%)")
+    st.warning("🔄 Auditoría de Retornos: Revisar las prioridades de reingreso a stock para evitar obsolescencia de componentes.")
+    st.markdown("<br><h3>📋 Plan de Clasificación e Ingreso a Stock</h3>", unsafe_allow_html=True)
+    
+    # FORMATO NATIVO PLANO: Se eliminan condiciones complejas para asegurar despliegue inmediato bajo el título
+    st.warning("⚠️ RETORNO EN REVISIÓN: Pedido #1011 (Comercializadora X) | Motivo: Error de despacho | Acción: Inspección visual obligatoria")
+    st.success("✅ REINGRESO AUTORIZADO: Pedido #1009 (Taller Central) | Motivo: Garantía de fábrica | Acción: Actualizar stock de inmediato")
+
+elif opcion == "🚛 Agente 5: Despacho (OTIF)":
+    st.markdown("<h1>🚛 Agente 5 - Control de Salida y Carga (OTIF)</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Monitoreo de ventanas horarias de salida de transportes y cumplimiento de bultos completos</p>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.metric(label="Nivel de Cumplimiento OTIF Actual", value="94.20%", delta="-3.80% vs Target (98%)")
+    st.info("🚛 Monitoreo de Andenes: Transportes consolidados listos. Validar ventanas críticas.")
+    st.markdown("<br><h3>📋 Estatus de Bahías y Ventanas Horarias de Despacho</h3>", unsafe_allow_html=True)
+    
+    st.info("🔵 BAHÍA 1 (Transporte Norte): Pedido #1040 — Estatus: EN ANDÉN DE CARGA (100% Completo)")
+
 
 
 

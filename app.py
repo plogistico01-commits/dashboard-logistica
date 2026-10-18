@@ -13,7 +13,7 @@ st.markdown("""
         .stRadio > div { background-color: rgba(255, 255, 255, 0.1) !important; padding: 10px !important; border-radius: 8px !important; }
         div[data-testid="stMetric"] { background-color: #FFFFFF !important; padding: 20px 25px !important; border-radius: 12px !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important; border: 1px solid #E5E7EB !important; transition: transform 0.2s ease; }
         div[data-testid="stMetric"]:hover { transform: translateY(-2px); }
-        data-testid="stMetricLabel"] > div { color: #4B5563 !important; font-weight: 600 !important; font-size: 14px !important; }
+        div[data-testid="stMetricLabel"] > div { color: #4B5563 !important; font-weight: 600 !important; font-size: 14px !important; }
         div[data-testid="stMetricValue"] > div { color: #111827 !important; font-weight: 700 !important; font-size: 28px !important; }
         h1, h2, h3 { color: #1F2937 !important; font-family: 'Inter', sans-serif !important; }
         .status-card { padding: 15px 20px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; border-left: 6px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
@@ -25,7 +25,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# CONFIGURACIÓN DE CONEXIONES EXTERNAS (DISCORD Y GOOGLE SHEETS)
+# INFRAESTRUCTURA CONSOLIDADA DE CONEXIONES EXTERNAS
 # =====================================================================
 WEBHOOKS_DISCORD = {
     "recepcion": "https://discord.com",
@@ -36,7 +36,6 @@ WEBHOOKS_DISCORD = {
     "dashboard": "https://discord.com"
 }
 
-# GIDs correspondientes a cada pestaña de tu Google Sheets publicado
 GIDS = {
     "picking": "537805708",
     "packing": "822850707",
@@ -61,26 +60,7 @@ def descargar_pestana_sheets(nombre_pestana):
         df.columns = df.columns.str.strip().str.upper()
         return df
     except Exception:
-        if nombre_pestana == "picking":
-            return pd.DataFrame({
-                'PEDIDO': list(("#1025", "#1024")), 'PASILLO': list(("A", "B")), 'NIVEL': list((1, 3)),
-                'PRODUCTO': list(("Bujías", "Filtros")), 'CANTIDAD': list((15, 10)), 'ESTADO': list(("PENDIENTE", "PENDIENTE"))
-            })
-        elif nombre_pestana == "packing":
-            return pd.DataFrame({
-                'PEDIDO': list(("#1024", "#1025")), 'CLIENTE': list(("Distribuidora A", "Logística Express")), 
-                'PESO_TEORICO': list((12.5, 8.2)), 'PESO_REAL': list((12.52, 8.5)), 'ESTADO': list(("OK", "DESVÍO"))
-            })
-        elif nombre_pestana == "devoluciones":
-            return pd.DataFrame({
-                'TICKET': list(("#D501", "#D502")), 'PRODUCTO': list(("Amortiguador", "Pastillas Freno")), 
-                'MOTIVO': list(("Falla Técnica", "Error Pedido")), 'ESTADO': list(("EN REVISIÓN", "RECHAZADO"))
-            })
-        elif nombre_pestana == "ruteo":
-            return pd.DataFrame({
-                'TRANSPORTE': list(("Unidad 01", "Unidad 02")), 'ZONA': list(("Norte", "Sur")), 
-                'PEDIDOS_ASIGNADOS': list((8, 12)), 'ESTADO_RUTA': list(("EN TRÁNSITO", "COMPLETO"))
-            })
+        # Retorna un DataFrame vacío seguro si la sincronización web tarda en responder
         return pd.DataFrame()
 # =====================================================================
 
@@ -156,6 +136,30 @@ elif opcion == "📦 Agente 1: Recepción":
     st.markdown("<br>", unsafe_allow_html=True)
     st.progress(0.33)
     st.error("⚠️ Alerta del Agente 1: El nivel de servicio (Fill Rate) se encuentra drásticamente por debajo del objetivo del 95.00%.")
+    
+    if st.button("📢 Reportar Alerta Crítica a Discord"):
+        enviar_mensaje_discord("recepcion", "🚨 **ALERTA CRÍTICA EN RECEPCIÓN:** El Fill Rate actual se desplomó al **33.33%**. Se requiere revisión de stock de inmediato.")
+        st.toast("Reporte enviado al canal de Recepción.", icon="📥")
+
+elif opcion == "🚜 Agente 2: Picking":
+    st.markdown("<h1>🚜 Agente 2 - Optimización de Rutas (Picking)</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px;'>Filtro de pedidos pendientes clasificados automáticamente por ubicación física</p>", unsafe_allow_html=True)
+    st.markdown("---")
+    
+    df_picking = descargar_pestana_sheets("picking")
+    
+    if not df_picking.empty:
+        if 'ESTADO' in df_picking.columns:
+            df_pendientes = df_picking[df_picking['ESTADO'].astype(str).str.upper() == 'PENDIENTE'].copy()
+        else:
+            df_pendientes = df_picking.copy()
+            
+        if 'PASILLO' in df_pendientes.columns and 'NIVEL' in df_pendientes.columns:
+            df_ruta = df_pendientes.sort_values(by=['PASILLO', 'NIVEL']).reset_index(drop=True)
+        else:
+            df_ruta = df_pendientes.reset_index(drop=True)
+            
+
 
 
     

@@ -18,11 +18,10 @@ GIDS = {
     "Ruteo": "773965386"
 }
 
-def cargar_datos(gid_name):
-    """Extrae de forma directa las filas de datos desde Google Sheets usando el GID específico."""
     try:
-                url_final = f"{SHEET_BASE_URL}&gid={GIDS[gid_name]}"
+        url_final = SHEET_BASE_URL + "&gid=" + GIDS[gid_name]
         return pd.read_csv(url_final)
+
     except Exception as e:
         st.error(f"Error de conexión: {e}")
         return pd.DataFrame()

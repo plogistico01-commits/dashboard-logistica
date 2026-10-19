@@ -37,12 +37,13 @@ st.markdown("""
 # ==============================================================================
 # 2. CONFIGURACIÓN DE FUENTES DE DATOS Y ENLACES (GOOGLE SHEETS & DISCORD)
 # ==============================================================================
-# Base URL de tu Google Sheet publicado como Web (Formato CSV para extracción directa)
+# Cambia esta URL por el enlace real de tu Sheet publicado como CSV
 SHEET_BASE_URL = "https://google.com"
 
 # Diccionario unificado de GIDs correspondientes a cada área logística
 GIDS = {
     "Dashboard": "1440866900",
+    "Recepcion": "0",
     "Picking": "537805708",
     "Packing": "822850707",
     "Devoluciones": "1865557384",
@@ -50,15 +51,19 @@ GIDS = {
 }
 
 # Webhook único asignado para alertas de Devoluciones / Operaciones Integradas
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1560761272478212197/KX1zWredjPADAQUIDfm-3rbi0Q9QRmpZJWCh-3sTj2NWPUNb0JPp3TCfcrVayts4G6J5"
+DISCORD_WEBHOOK_URL = "https://discord.com"
 
 # ==============================================================================
 # 3. FUNCIONES DE AUTOMATIZACIÓN (CONECTORES DE DATOS Y ALERTAS)
 # ==============================================================================
-@st.cache_data(ttl=60)  # Mantiene los datos en caché por 60 segundos para evitar saturar la red
+@st.cache_data(ttl=60)
 def cargar_datos_sheet(gid_name):
     """Extrae dinámicamente datos desde una pestaña específica de Google Sheets vía GID."""
     try:
+        if "google.com" in SHEET_BASE_URL and "TU_ID_DE_SHEET" in SHEET_BASE_URL:
+            st.sidebar.warning("⚠️ Configura la URL real de tu Google Sheet.")
+            return pd.DataFrame()
+            
         url = f"{SHEET_BASE_URL}&gid={GIDS[gid_name]}"
         df = pd.read_csv(url)
         return df
@@ -94,14 +99,17 @@ def enviar_alerta_discord(titulo, descripcion, color_hex, campos=None):
 def renderizar_tabla_premium(df, columna_id, columna_texto, columna_status):
     """Transforma un DataFrame crudo en una lista visual elegante y fácil de leer."""
     if df.empty:
-        st.warning("No hay registros disponibles en esta sección.")
+        st.warning("No hay registros disponibles o el archivo está vacío.")
         return
         
     st.markdown('<div class="premium-table-container">', unsafe_allow_html=True)
     for _, row in df.iterrows():
+        if columna_id not in df.columns or columna_texto not in df.columns or columna_status not in df.columns:
+            st.error(f"Columnas requeridas no encontradas. Verifica que existan: {columna_id}, {columna_texto}, {columna_status}")
+            break
+            
         status_val = str(row[columna_status]).strip().upper()
         
-        # Asignación dinámica de estilos según estado
         if status_val in ["CRÍTICO", "ALERTA", "FALLO", "REVISAR CONTENIDO", "X"]:
             bg_badge, txt_badge = "#FEF2F2", "#991B1B"
         elif status_val in ["REVISIÓN", "PENDIENTE", "PROCESO"]:
@@ -144,35 +152,38 @@ opcion = st.sidebar.radio("Menú de Navegación:", [
     "🔄 Agente 4: Devoluciones", 
     "🚛 Agente 5: Ruteo"
 ])
+
 st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>", unsafe_allow_html=True)
-st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
+st.sidebar.caption("🟢 Servidor Activo")
 
 # ==============================================================================
-# 5. ENRUTAMIENTO DE INTERFAZ Y LOGICA DE NAVEGACIÓN
+# 5. LÓGICA DE ENRUTAMIENTO Y RENDERIZADO DE PÁGINAS
 # ==============================================================================
 if opcion == "🏠 Dashboard Principal":
-    st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
-        
-    st.markdown("<br>", unsafe_allow_html=True)
-    col1, col2, col3, col4 = st.columns(4)
-    with col1: st.metric(label="📥 Agente 1 (Fill Rate)", value="33.33%", delta="-61.67% vs Meta")
-    with col2: st.metric(label="🚜 Agente 2 (Picking)", value="85.00%", delta="-13.00% vs Meta")
-    with col3: st.metric(label="⚖️ Agente 3 (Packing)", value="2.00%", delta="+2.00% Desvío")
-    with col4: st.metric(label="🚛 Agente 5 (OTIF Ruteo)", value="94.20%", delta="-3.80% vs Meta")
-        
-    st.markdown("<br><h3>📊 Rendimiento vs Metas del Proyecto</h3>", unsafe_allow_html=True)
-    chart_data = pd.DataFrame({
-        'Indicador': ['Fill Rate', 'Picking', 'Packing', 'OTIF Ruteo'],
-        'Progreso Real': [33.33, 85.00, 2.00, 94.20],
-        'Meta Objetivo': [95.00, 98.00, 0.00, 95.00]
-    }).set_index('Indicador')
-    st.bar_chart(chart_data, use_container_width=True)
+    st.title("🏠 Dashboard Logístico Central")
+    df_dash = cargar_datos_sheet("Dashboard")
+    renderizar_tabla_premium(df_dash, columna_id="ID", columna_texto="Detalle", columna_status="Estado")
+
+elif opcion == "📦 Agente 1: Recepción":
+    st.title("📦 Control de Recepción de Mercancías")
+    df_rec = cargar_datos_sheet("Recepcion")
+    renderizar_tabla_premium(df_rec, columna_id="ID", columna_texto="Detalle", columna_status="Estado")
+
+elif opcion == "🚜 Agente 2: Picking":
+    st.title("🚜 Gestión de Picking en Almacén")
+    df_pick = cargar_datos_sheet("Picking")
+    renderizar_tabla_premium(df_pick, columna_id="ID", columna_texto="Detalle", columna_status="Estado")
+
+elif opcion == "⚖️ Agente 3: Packing":
+    st.title("⚖️ Línea de Packing y Embalaje")
+    df_pack = cargar_datos_sheet("Packing")
+    renderizar_tabla_premium(df_pack, columna_id="ID", columna_texto="Detalle", columna_status="Estado")
     
-    st.markdown("<br><h3>🚦 Estado Operativo de los Procesos</h3>", unsafe_allow_html=True)
-    st.markdown("""
-        <div class="status-card status-critico">
-            <strong>🔴 Agente 1: Recepción (Fill Rate)</strong> — Estatus: <u>ALERTA CRÍTICA</u> <br>
+    if st.button("🚨 Reportar Incidencia de Packing"):
+        exito = enviar_alerta_discord("Alerta de Packing", "Se detectó un retraso en la línea de empaque.", "#EF4444", {"Operador": "Agente 3", "Criticidad": "Alta"})
+        if exito: st.success("Alerta enviada a Discord con éxito")
+
+
         
 
 

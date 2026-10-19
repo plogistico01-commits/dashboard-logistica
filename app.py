@@ -37,8 +37,8 @@ st.markdown("""
 # ==============================================================================
 # 2. CONFIGURACIÓN DE FUENTES DE DATOS Y ENLACES (GOOGLE SHEETS & DISCORD)
 # ==============================================================================
-# Cambia esta URL por el enlace real de tu Sheet publicado como CSV
-SHEET_BASE_URL = "https://google.com"
+# URL real de tu Google Sheet ya integrada correctamente
+SHEET_BASE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRVoZ6vpNBIbJ7rXQcHMBTUQ9CNKA2O8E-KMMAM-w1FAOr9C-aKhLwgwBT4FgYFar-ycY6TZLfNW7wf/pub?output=csv"
 
 # Diccionario unificado de GIDs correspondientes a cada área logística
 GIDS = {
@@ -60,10 +60,6 @@ DISCORD_WEBHOOK_URL = "https://discord.com"
 def cargar_datos_sheet(gid_name):
     """Extrae dinámicamente datos desde una pestaña específica de Google Sheets vía GID."""
     try:
-        if "google.com" in SHEET_BASE_URL and "TU_ID_DE_SHEET" in SHEET_BASE_URL:
-            st.sidebar.warning("⚠️ Configura la URL real de tu Google Sheet.")
-            return pd.DataFrame()
-            
         url = f"{SHEET_BASE_URL}&gid={GIDS[gid_name]}"
         df = pd.read_csv(url)
         return df
@@ -99,30 +95,33 @@ def enviar_alerta_discord(titulo, descripcion, color_hex, campos=None):
 def renderizar_tabla_premium(df, columna_id, columna_texto, columna_status):
     """Transforma un DataFrame crudo en una lista visual elegante y fácil de leer."""
     if df.empty:
-        st.warning("No hay registros disponibles o el archivo está vacío.")
+        st.warning("No hay registros disponibles o la pestaña está vacía.")
         return
         
     st.markdown('<div class="premium-table-container">', unsafe_allow_html=True)
-    for _, row in df.iterrows():
+    for idx, row in df.iterrows():
         if columna_id not in df.columns or columna_texto not in df.columns or columna_status not in df.columns:
             st.error(f"Columnas requeridas no encontradas. Verifica que existan: {columna_id}, {columna_texto}, {columna_status}")
             break
             
         status_val = str(row[columna_status]).strip().upper()
         
-        if status_val in ["CRÍTICO", "ALERTA", "FALLO", "REVISAR CONTENIDO", "X"]:
+        if "ALERTA" in status_val or "CRÍTICO" in status_val or "🔴" in status_val:
             bg_badge, txt_badge = "#FEF2F2", "#991B1B"
-        elif status_val in ["REVISIÓN", "PENDIENTE", "PROCESO"]:
+        elif "REVISIÓN" in status_val or "PENDIENTE" in status_val:
             bg_badge, txt_badge = "#FFF7ED", "#9A3412"
-        elif status_val in ["ÓPTIMO", "COMPLETO", "EXITOSO", "A"]:
+        elif "ÓPTIMO" in status_val or "🟢" in status_val or "ALTA" in status_val:
             bg_badge, txt_badge = "#F0FDF4", "#166534"
         else:
             bg_badge, txt_badge = "#F0F9FF", "#075985"
             
+        # Generar un ID visual incremental basado en el índice de la fila
+        id_visual = idx + 1
+            
         st.markdown(f"""
             <div class="premium-row">
-                <div class="premium-id">#{row[columna_id]}</div>
-                <div class="premium-text">{row[columna_texto]}</div>
+                <div class="premium-id">#{id_visual}</div>
+                <div class="premium-text"><b>{row[columna_id]}</b> — Valor: {row[columna_texto]}</div>
                 <div class="premium-badge" style="background-color: {bg_badge}; color: {txt_badge};">
                     {row[columna_status]}
                 </div>
@@ -162,26 +161,25 @@ st.sidebar.caption("🟢 Servidor Activo")
 if opcion == "🏠 Dashboard Principal":
     st.title("🏠 Dashboard Logístico Central")
     df_dash = cargar_datos_sheet("Dashboard")
-    renderizar_tabla_premium(df_dash, columna_id="ID", columna_texto="Detalle", columna_status="Estado")
+    renderizar_tabla_premium(df_dash, columna_id="Indicador", columna_texto="Valor Actual", columna_status="Estado de Rendimiento")
 
 elif opcion == "📦 Agente 1: Recepción":
     st.title("📦 Control de Recepción de Mercancías")
     df_rec = cargar_datos_sheet("Recepcion")
-    renderizar_tabla_premium(df_rec, columna_id="ID", columna_texto="Detalle", columna_status="Estado")
+    renderizar_tabla_premium(df_rec, columna_id="Indicador", columna_texto="Valor Actual", columna_status="Estado de Rendimiento")
 
 elif opcion == "🚜 Agente 2: Picking":
     st.title("🚜 Gestión de Picking en Almacén")
     df_pick = cargar_datos_sheet("Picking")
-    renderizar_tabla_premium(df_pick, columna_id="ID", columna_texto="Detalle", columna_status="Estado")
+    renderizar_tabla_premium(df_pick, columna_id="Indicador", columna_texto="Valor Actual", columna_status="Estado de Rendimiento")
 
 elif opcion == "⚖️ Agente 3: Packing":
     st.title("⚖️ Línea de Packing y Embalaje")
     df_pack = cargar_datos_sheet("Packing")
-    renderizar_tabla_premium(df_pack, columna_id="ID", columna_texto="Detalle", columna_status="Estado")
+    renderizar_tabla_premium(df_pack, columna_id="Indicador", columna_texto="Valor Actual", columna_status="Estado de Rendimiento")
     
     if st.button("🚨 Reportar Incidencia de Packing"):
-        exito = enviar_alerta_discord("Alerta de Packing", "Se detectó un retraso en la línea de empaque.", "#EF4444", {"Operador": "Agente 3", "Criticidad": "Alta"})
-        if exito: st.success("Alerta enviada a Discord con éxito")
+
 
 
         

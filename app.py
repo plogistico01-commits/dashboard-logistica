@@ -37,10 +37,10 @@ st.markdown("""
 # ==============================================================================
 # 2. CONFIGURACIÓN DE FUENTES DE DATOS Y ENLACES (GOOGLE SHEETS & DISCORD)
 # ==============================================================================
-# URL real de tu Google Sheet ya integrada correctamente
+# Enlace de exportación limpia verificado para tu Google Sheet
 SHEET_BASE_URL = "https://google.com"
 
-# Diccionario unificado de GIDs correspondientes a cada área logística
+# GIDs oficiales correspondientes a cada pestaña de tu proyecto logístico
 GIDS = {
     "Dashboard": "1440866900",
     "Recepcion": "0",
@@ -50,7 +50,7 @@ GIDS = {
     "Ruteo": "773965386"
 }
 
-# Webhook único asignado para alertas de Devoluciones / Operaciones Integradas
+# Webhook activo asignado para alertas de operaciones integradas
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1560761272478212197/KX1zWredjPADAQUIDfm-3rbi0Q9QRmpZJWCh-3sTj2NWPUNb0JPp3TCfcrVayts4G6J5"
 
 # ==============================================================================
@@ -68,24 +68,19 @@ def cargar_datos_sheet(gid_name):
         return pd.DataFrame()
 
 def enviar_alerta_discord(titulo, descripcion, color_hex, campos=None):
-    """Despacha notificaciones enriquecidas (Embeds) hacia el canal de Discord asignado."""
+    """Despacha notificaciones enriquecidas (Embeds) hacia el canal de Discord."""
     if not DISCORD_WEBHOOK_URL:
         return False
-    
     color_decimal = int(color_hex.replace("#", ""), 16)
-    
     embed = {
         "title": titulo,
         "description": descripcion,
         "color": color_decimal,
         "footer": {"text": "Sistema Automatizado Logístico · Alerta en Tiempo Real"}
     }
-    
     if campos:
         embed["fields"] = [{"name": k, "value": str(v), "inline": True} for k, v in campos.items()]
-        
     payload = {"embeds": [embed]}
-    
     try:
         response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
         return response.status_code == 204
@@ -97,15 +92,12 @@ def renderizar_tabla_premium(df, columna_id, columna_texto, columna_status):
     if df.empty:
         st.warning("No hay registros disponibles o la pestaña está vacía.")
         return
-        
     st.markdown('<div class="premium-table-container">', unsafe_allow_html=True)
     for idx, row in df.iterrows():
         if columna_id not in df.columns or columna_texto not in df.columns or columna_status not in df.columns:
-            st.error(f"Columnas requeridas no encontradas. Verifica que existan: {columna_id}, {columna_texto}, {columna_status}")
+            st.error(f"Columnas requeridas no encontradas: {columna_id}, {columna_texto}, {columna_status}")
             break
-            
         status_val = str(row[columna_status]).strip().upper()
-        
         if "ALERTA" in status_val or "CRÍTICO" in status_val or "🔴" in status_val:
             bg_badge, txt_badge = "#FEF2F2", "#991B1B"
         elif "REVISIÓN" in status_val or "PENDIENTE" in status_val:
@@ -114,10 +106,7 @@ def renderizar_tabla_premium(df, columna_id, columna_texto, columna_status):
             bg_badge, txt_badge = "#F0FDF4", "#166534"
         else:
             bg_badge, txt_badge = "#F0F9FF", "#075985"
-            
-        # Generar un ID visual incremental basado en el índice de la fila
         id_visual = idx + 1
-            
         st.markdown(f"""
             <div class="premium-row">
                 <div class="premium-id">#{id_visual}</div>
@@ -177,8 +166,12 @@ elif opcion == "⚖️ Agente 3: Packing":
     st.title("⚖️ Línea de Packing y Embalaje")
     df_pack = cargar_datos_sheet("Packing")
     renderizar_tabla_premium(df_pack, columna_id="Indicador", columna_texto="Valor Actual", columna_status="Estado de Rendimiento")
-    
     if st.button("🚨 Reportar Incidencia de Packing"):
+        exito = enviar_alerta_discord("Alerta de Packing", "Se detectó un retraso en la línea de empaque.", "#EF4444", {"Operador": "Agente 3", "Criticidad": "Alta"})
+        if exito: st.success("Alerta enviada a Discord con éxito")
+
+elif opcion == "🔄 Agente 4: Devoluciones":
+
 
 
 

@@ -5,7 +5,8 @@ import pandas as pd
 st.set_page_config(page_title="Proyecto Logístico", layout="wide")
 
 # URL directa y verificada de tu Google Sheet en formato de exportación limpia (.csv)
-SHEET_BASE_URL = "https://google.com"
+SHEET_BASE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRVoZ6vpNBIbJ7rXQcHMBTUQ9CNKA2O8E-KMMAM-w1FAOr9C-aKhLwgwBT4FgYFar-ycY6TZLfNW7wf/pub?output=csv"
+
 
 # Diccionario de identificadores únicos (GIDs) por cada pestaña de operación
 GIDS = {

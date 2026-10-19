@@ -37,33 +37,25 @@ st.markdown("""
 # ==============================================================================
 # 2. CONFIGURACIÓN DE FUENTES DE DATOS Y ENLACES (GOOGLE SHEETS & DISCORD)
 # ==============================================================================
-# Endpoint estructurado para la lectura directa de dataframes via CSV
+# Base URL de tu Google Sheet publicado como Web (Formato CSV para extracción directa)
 SHEET_BASE_URL = "https://google.com"
 
-# Diccionario verificado con los identificadores GID exactos de tus hojas
+# Diccionario unificado de GIDs correspondientes a cada área logística
 GIDS = {
     "Dashboard": "1440866900",
-    "Recepcion": "0",
     "Picking": "537805708",
     "Packing": "822850707",
     "Devoluciones": "1865557384",
     "Ruteo": "773965386"
 }
 
-# Diccionario centralizado de Webhooks por área operativa
-DISCORD_WEBHOOKS = {
-    "dashboard": "https://discord.com",
-    "recepcion": "https://discord.com",
-    "picking": "https://discord.com",
-    "packing": "https://discord.com",
-    "devoluciones": "https://discord.com",
-    "ruteo": "https://discord.com"
-}
+# Webhook único asignado para alertas de Devoluciones / Operaciones Integradas
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1560761272478212197/KX1zWredjPADAQUIDfm-3rbi0Q9QRmpZJWCh-3sTj2NWPUNb0JPp3TCfcrVayts4G6J5"
 
 # ==============================================================================
 # 3. FUNCIONES DE AUTOMATIZACIÓN (CONECTORES DE DATOS Y ALERTAS)
 # ==============================================================================
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=60)  # Mantiene los datos en caché por 60 segundos para evitar saturar la red
 def cargar_datos_sheet(gid_name):
     """Extrae dinámicamente datos desde una pestaña específica de Google Sheets vía GID."""
     try:
@@ -74,10 +66,9 @@ def cargar_datos_sheet(gid_name):
         st.sidebar.error(f"⚠️ Error conectando con pestaña {gid_name}: {e}")
         return pd.DataFrame()
 
-def enviar_alerta_discord(area, titulo, descripcion, color_hex, campos=None):
-    """Despacha notificaciones enriquecidas (Embeds) hacia el canal de Discord del área asignada."""
-    webhook_url = DISCORD_WEBHOOKS.get(area.lower())
-    if not webhook_url:
+def enviar_alerta_discord(titulo, descripcion, color_hex, campos=None):
+    """Despacha notificaciones enriquecidas (Embeds) hacia el canal de Discord asignado."""
+    if not DISCORD_WEBHOOK_URL:
         return False
     
     color_decimal = int(color_hex.replace("#", ""), 16)
@@ -95,46 +86,37 @@ def enviar_alerta_discord(area, titulo, descripcion, color_hex, campos=None):
     payload = {"embeds": [embed]}
     
     try:
-        response = requests.post(webhook_url, json=payload)
+        response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
         return response.status_code == 204
     except Exception:
         return False
 
-def renderizar_tabla_premium(df):
-    """Transforma un DataFrame en una lista visual elegante leyendo por posición de columnas de forma segura."""
+def renderizar_tabla_premium(df, columna_id, columna_texto, columna_status):
+    """Transforma un DataFrame crudo en una lista visual elegante y fácil de leer."""
     if df.empty:
         st.warning("No hay registros disponibles en esta sección.")
         return
-    
-    # Verificación de estructura mínima obligatoria (3 columnas)
-    if len(df.columns) < 3:
-        st.info("La hoja contiene datos pero no cumple el formato estructurado de 3 columnas (ID, Detalle, Estado).")
-        st.dataframe(df, use_container_width=True)
-        return
-        
-    col_id = df.columns[0]
-    col_texto = df.columns[1]
-    col_status = df.columns[2]
         
     st.markdown('<div class="premium-table-container">', unsafe_allow_html=True)
     for _, row in df.iterrows():
-        status_val = str(row[col_status]).strip().upper()
+        status_val = str(row[columna_status]).strip().upper()
         
-        if status_val in ["CRÍTICO", "ALERTA", "FALLO", "REVISAR CONTENIDO", "X", "CRITICO"]:
+        # Asignación dinámica de estilos según estado
+        if status_val in ["CRÍTICO", "ALERTA", "FALLO", "REVISAR CONTENIDO", "X"]:
             bg_badge, txt_badge = "#FEF2F2", "#991B1B"
-        elif status_val in ["REVISIÓN", "PENDIENTE", "PROCESO", "REVISION"]:
+        elif status_val in ["REVISIÓN", "PENDIENTE", "PROCESO"]:
             bg_badge, txt_badge = "#FFF7ED", "#9A3412"
-        elif status_val in ["ÓPTIMO", "COMPLETO", "EXITOSO", "A", "OPTIMO"]:
+        elif status_val in ["ÓPTIMO", "COMPLETO", "EXITOSO", "A"]:
             bg_badge, txt_badge = "#F0FDF4", "#166534"
         else:
             bg_badge, txt_badge = "#F0F9FF", "#075985"
             
         st.markdown(f"""
             <div class="premium-row">
-                <div class="premium-id">#{row[col_id]}</div>
-                <div class="premium-text">{row[col_texto]}</div>
+                <div class="premium-id">#{row[columna_id]}</div>
+                <div class="premium-text">{row[columna_texto]}</div>
                 <div class="premium-badge" style="background-color: {bg_badge}; color: {txt_badge};">
-                    {row[col_status]}
+                    {row[columna_status]}
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -166,20 +148,31 @@ st.sidebar.markdown("<br><br><hr style='border-color: rgba(255,255,255,0.15);'>"
 st.sidebar.caption("🟢 Servidor Serverless · Capa 0 USD")
 
 # ==============================================================================
-# 5. CONTROL DE VISTAS Y NAVEGACIÓN (LÓGICA OPERATIVA CORREGIDA)
+# 5. ENRUTAMIENTO DE INTERFAZ Y LOGICA DE NAVEGACIÓN
 # ==============================================================================
-
 if opcion == "🏠 Dashboard Principal":
-    st.title("🏠 Control General Operativo - KPIs")
-    df_dash = cargar_datos_sheet("Dashboard")
+    st.markdown("<h1>Dashboard Ejecutivo</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #6B7280; font-size: 14px; margin-top: 0px;'>Cuadro de mando corporativo · Sincronización en tiempo real</p>", unsafe_allow_html=True)
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+    col1, col2, col3, col4 = st.columns(4)
+    with col1: st.metric(label="📥 Agente 1 (Fill Rate)", value="33.33%", delta="-61.67% vs Meta")
+    with col2: st.metric(label="🚜 Agente 2 (Picking)", value="85.00%", delta="-13.00% vs Meta")
+    with col3: st.metric(label="⚖️ Agente 3 (Packing)", value="2.00%", delta="+2.00% Desvío")
+    with col4: st.metric(label="🚛 Agente 5 (OTIF Ruteo)", value="94.20%", delta="-3.80% vs Meta")
+        
+    st.markdown("<br><h3>📊 Rendimiento vs Metas del Proyecto</h3>", unsafe_allow_html=True)
+    chart_data = pd.DataFrame({
+        'Indicador': ['Fill Rate', 'Picking', 'Packing', 'OTIF Ruteo'],
+        'Progreso Real': [33.33, 85.00, 2.00, 94.20],
+        'Meta Objetivo': [95.00, 98.00, 0.00, 95.00]
+    }).set_index('Indicador')
+    st.bar_chart(chart_data, use_container_width=True)
     
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric(label="Eficiencia General de Planta", value="94.2%", delta="1.5%")
-    with col2:
-        st.metric(label="Pedidos Despachados Hoy", value="1,240", delta="85")
-    with col3:
-        st.metric(label="Incidentes Activos", value="2", delta="-1")
+    st.markdown("<br><h3>🚦 Estado Operativo de los Procesos</h3>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class="status-card status-critico">
+            <strong>🔴 Agente 1: Recepción (Fill Rate)</strong> — Estatus: <u>ALERTA CRÍTICA</u> <br>
         
 
 

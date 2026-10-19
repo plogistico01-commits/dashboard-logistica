@@ -38,7 +38,7 @@ st.markdown("""
 # 2. CONFIGURACIÓN DE FUENTES DE DATOS Y ENLACES (GOOGLE SHEETS & DISCORD)
 # ==============================================================================
 # URL real de tu Google Sheet ya integrada correctamente
-SHEET_BASE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRVoZ6vpNBIbJ7rXQcHMBTUQ9CNKA2O8E-KMMAM-w1FAOr9C-aKhLwgwBT4FgYFar-ycY6TZLfNW7wf/pub?output=csv"
+SHEET_BASE_URL = "https://google.com"
 
 # Diccionario unificado de GIDs correspondientes a cada área logística
 GIDS = {
@@ -51,7 +51,7 @@ GIDS = {
 }
 
 # Webhook único asignado para alertas de Devoluciones / Operaciones Integradas
-DISCORD_WEBHOOK_URL = "https://discord.com"
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1560761272478212197/KX1zWredjPADAQUIDfm-3rbi0Q9QRmpZJWCh-3sTj2NWPUNb0JPp3TCfcrVayts4G6J5"
 
 # ==============================================================================
 # 3. FUNCIONES DE AUTOMATIZACIÓN (CONECTORES DE DATOS Y ALERTAS)
